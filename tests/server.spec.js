@@ -6,12 +6,15 @@ const constants = require('../constants')
 
 describe('Server', function () {
 
-    //#region Unix and DB Keys
+    //#region Docs
     // 
+    // ---------------------------------------------------------------------
+    // Unix and DB Keys
+    // ---------------------------------------------------------------------
     // Unix Keys are expected to be NUMBERS.
     // The Keys in LevelDB are fucking STRINGS causing sorting havoc.
     // 
-    // LevelDB string keys originate from Unix Timestamps.
+    // Implementing LevelDB string keys as numerical Unix Timestamps.
     // Conversion functions need to exist to convert Unix Timestamps 
     // back-and-forth between numbers and strings. Since LevelDB sorts 
     // these string keys alphabetically, the numbers need to be padded 
@@ -31,7 +34,23 @@ describe('Server', function () {
     //      '0123' equals -123  negative
     //      '1123' equals +123  positive
     // 
-    //#endregion Unix and DB Keys
+    // ---------------------------------------------------------------------
+    // Duplicate Schedules
+    // ---------------------------------------------------------------------
+    // LevelDB can't have duplicate keys. It's possible to have duplicate
+    // schedules (two schedules occurring at the exact same Unix Timestamp).
+    // However, it's not possible to have two schedules occur at the exact
+    // same MILLISECOND. For example, there may be two schedules occurring
+    // at 2:30 PM, but this only needs to be accurate down to the MINUTE.
+    // This allows adding on MILLISECONDS (which can be ignored) yet still
+    // provide for unique Unix Timestamps for schedules occurring at the
+    // same time. Then, instead of asking for a single schedule which occurs 
+    // at 2:30 PM, you would ask for any schedules occurring between 2:30 PM 
+    // and 2:31 PM.
+    // 
+    // ---------------------------------------------------------------------
+    // 
+    //#endregion Docs
 
     it('should test getUnixKey', function () {
 
@@ -57,15 +76,19 @@ describe('Server', function () {
 
     it('should test getDbKey', function () {
 
+        // Positive number should convert to a ZERO-padded string pre-pended with a '0'
         let dbKey = server.getDbKey(1507334400000)
         expect(dbKey).to.equal('101507334400000')
 
+        // 'Positive' string returns the same 'positive' string
         dbKey = server.getDbKey('101507334400000')
         expect(dbKey).to.equal('101507334400000')
 
+        // Negative number should convert to a ZERO-padded string pre-pended with a '1'
         dbKey = server.getDbKey(-1507334400000)
         expect(dbKey, 'THIS GUY?').to.equal('001507334400000')
 
+        // 'Negative' string returns the same 'negative' string
         dbKey = server.getDbKey('001507334400000')
         expect(dbKey).to.equal('001507334400000')
 
@@ -93,6 +116,13 @@ describe('Server', function () {
             "start": nowText,
             "end": hourLaterText
         }
+
+        // Insert three separate schedules and ensure that 'duplicate' schedules occuring at the same time
+        // have the millisecond portion incremented.
+
+        // Currently this test is flawed because it can only be successfully run once a minute. There's only 
+        // a function to delete a *singular* schedule instead of many. This test would need to potentially
+        // delete many schedules, not just one.
 
         server.delSchedule(nowUnix)
             .then((delDbKey)      => {

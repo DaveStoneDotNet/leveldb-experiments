@@ -27,8 +27,8 @@ function seedSchedules() {
 }
 
 function forEachPromise(items, fn) {
-    return items.reduce(function (promise, item) {
-        return promise.then(function () {
+    return items.reduce((promise, item) => {
+        return promise.then(() => {
             return fn(item);
         });
     }, Promise.resolve());
@@ -46,7 +46,7 @@ function insertSchedule(jsonSchedule) {
             .then((nextDbKey, err) => {
                 putSchedule(nextDbKey, jsonSchedule)
                     .then((putDbKey) => resolve(putDbKey))
-                    .catch((err) => reject(err))
+                    .catch((putErr) => reject(putErr))
             })
             .catch((err) => {
                 console.log('GET NEXT KEY ERROR', err)
@@ -61,13 +61,13 @@ function insertSchedule(jsonSchedule) {
 
 function getUnixKey(dbKey) {
 
-    if (typeof dbKey === 'number') return dbKey
-    if (typeof dbKey !== 'string') throw ('NOT A STRING')
-    return dbKey.startsWith('0') ? -(dbKey.substring(1)) : +(dbKey.substring(1))
+    if (typeof dbKey === 'number') { return dbKey }
+    if (typeof dbKey !== 'string') { throw new Error('NOT A STRING') }
+    return dbKey.startsWith('0') ? -(dbKey.substring(1)) : Number(dbKey.substring(1))
 }
 
 function getDbKey(unixKey) {
-    return typeof unixKey === 'number' ? (unixKey < 0 ? `0${(-unixKey).toString().padStart(14, '0')}` : `1${unixKey.toString().padStart(14, '0')}`) : unixKey
+    return typeof unixKey === 'number' ? (unixKey < 0 ? `0${(-unixKey).toString().padStart(constants.DBKEYPADDING, '0')}` : `1${unixKey.toString().padStart(constants.DBKEYPADDING, '0')}`) : unixKey
 }
 
 function getUnixDate(unixKey) {
@@ -76,20 +76,20 @@ function getUnixDate(unixKey) {
 
 function getNextDbKey(unixKey) {
 
-    unixKey = getUnixKey(unixKey)
+    const validatedUnixKey = getUnixKey(unixKey)
 
-    let nextUnixKey = unixKey
-    const unixStartKey = unixKey
+    let nextUnixKey = validatedUnixKey
+    const unixStartKey = validatedUnixKey
     const unixEndKey = unixStartKey + constants.SECOND
 
     return new Promise((resolve, reject) => {
         getSchedules(unixStartKey, unixEndKey)
             .then((jsonSchedules, err) => {
 
-                if (err) console.log('LIST SCHEDULE ERROR', err)
+                if (err) { console.log('LIST SCHEDULE ERROR', err) }
 
                 if (jsonSchedules && jsonSchedules.size > 0) {
-                    nextUnixKey = getUnixKey(([...jsonSchedules.keys()].sort().pop())) + 1 // CAUTION: The key is returned as a STRING
+                    nextUnixKey = getUnixKey([...jsonSchedules.keys()].sort().pop()) + 1 // CAUTION: The key is returned as a STRING
                 }
 
                 const nextDbKey = getDbKey(nextUnixKey)
@@ -111,15 +111,15 @@ function unixKeyToDateTimeText(unixKey) {
 
 function putSchedule(dbKey, jsonSchedule) {
 
-    dbKey = getDbKey(dbKey)
+    const validatedDbKey = getDbKey(dbKey)
 
     return new Promise((resolve, reject) => {
-        schedulesDb.put(dbKey, jsonSchedule, (err) => {
+        schedulesDb.put(validatedDbKey, jsonSchedule, (err) => {
             if (err) {
                 console.log('PUT ERROR', err)
                 reject(err)
             }
-            resolve(dbKey)
+            resolve(validatedDbKey)
         })
     })
 
@@ -170,7 +170,6 @@ function getSchedules(unixStartKey, unixEndKey) {
             .on('error', (err) => {
                 reject(err)
             })
-            .on('close', () => {})
             .on('end', () => {
                 resolve(schedules)
             })
@@ -180,15 +179,15 @@ function getSchedules(unixStartKey, unixEndKey) {
 
 function delSchedule(dbKey) {
 
-    dbKey = getDbKey(dbKey)
+    const validatedDbKey = getDbKey(dbKey)
 
     return new Promise((resolve, reject) => {
-        schedulesDb.del(dbKey, (err, value) => {
+        schedulesDb.del(validatedDbKey, (err, value) => {
             if (err) {
                 console.log('GET ERROR', err)
                 reject(err)
             }
-            resolve(dbKey)
+            resolve(validatedDbKey)
         })
     })
 
@@ -196,14 +195,14 @@ function delSchedule(dbKey) {
 
 function updateSchedule(dbKey, jsonSchedule) {
 
-    const dbKey = getDbKey(dbKey)
+    const validatedDbKey = getDbKey(dbKey)
 
     return new Promise((resolve, reject) => {
 
-        delSchedule(dbKey)
-            .then((dbKey, err) => {
-                putSchedule(dbKey, jsonSchedule)
-                    .then((dbKey, err) => {
+        delSchedule(validatedDbKey)
+            .then((deletedDbKey) => {
+                putSchedule(deletedDbKey, jsonSchedule)
+                    .then((putDbKey) => {
                         resolve(jsonSchedule)
                     })
                     .catch((err) => {
@@ -234,11 +233,11 @@ function tester() {
     const dbKey = getDbKey(nowUnix)
 
     const schedule = {
-        "name": "meeting 1",
-        "type": "user",
-        "start": nowText,
-        "end": hourLaterText
-    }
+                         'name': 'meeting 1',
+                         'type': 'user',
+                         'start': nowText,
+                         'end':   hourLaterText
+                     }
 
     delSchedule(nowUnix)
         .then((dbKey_O) => { return insertSchedule(schedule) })
@@ -256,7 +255,7 @@ function tester() {
 
 function main() {
 
-    tester()
+    //tester()
 
     // console.log(unixKeyToDateTimeText(1507584632692))
     // console.log(unixKeyToDateTimeText(1507584600000))
