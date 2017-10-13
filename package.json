@@ -1,0 +1,21 @@
+{
+    "name": "levelup",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js",
+      "debug": "node --inspect-brk server.js",
+      "test": "mocha tests/*.spec.js",
+      "testy": "mocha --watch tests/*.spec.js"
+    },
+    "dependencies": {
+      "chai": "^4.1.2",
+      "level": "^1.7.0",
+      "mocha": "^4.0.0",
+      "moment": "^2.18.1"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  
