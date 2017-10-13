@@ -57,6 +57,13 @@ describe('Server', function () {
 
     it('should test getUnixKey', function () {
 
+        // Intended to convert the LevelDB ZERO-Padded 
+        // string key into a numerical Unix timestamp 
+        // which can be used to instantiate a moment date.
+        // (See 'Docs' above)
+
+        // ---
+
         // Positive string converts to a positive number
         let unixKey = server.getUnixKey('101507334400000')
         expect(unixKey).to.equal(1507334400000)
@@ -75,9 +82,18 @@ describe('Server', function () {
 
         // Anything other than a string or a number should thrown an exception
 
+        expect(() => server.getUnixKey()).to.throw(Error)
+        expect(() => server.getUnixKey(null)).to.throw(Error)
+        expect(() => server.getUnixKey({})).to.throw(Error)
     })
 
     it('should test getDbKey', function () {
+
+        // Intended to convert a numerical Unix timestamp 
+        // into a sortable, LevelDB, ZERO-Padded, string key.
+        // (See 'Docs' above)
+
+        // ---
 
         // Positive number should convert to a ZERO-padded string pre-pended with a '0'
         let dbKey = server.getDbKey(1507334400000)
@@ -97,12 +113,27 @@ describe('Server', function () {
 
     })
 
+    it('should test getNextDbKey', function () {
+
+        // LevelDB keys must be unique. Unix timestamps are being 
+        // used as LevelDB keys. Unix timestamps are unique down
+        // to the millisecond. Schedules don't use milliseconds 
+        // so the millisecond portion is just an auto-incrementing 
+        // 'id' portion for schedules which occur at the same 
+        // time. 'getNextDbKey' is intended to auto-increment the 
+        // millisecond portion of any max Unix timestamp for any 
+        // schedule which occurs at the same time as the Unix 
+        // timestamp parameter provided.
+        // (See 'Docs' above)
+
+    })
+
     it('should test insertSchedule', function () {
 
         const testMoment = moment(INSERT_DATE, constants.DATETIMEFORMAT)
         
         const unixKey  = testMoment.valueOf()
-        const dbKey      = server.getDbKey(unixKey)
+        const dbKey    = server.getDbKey(unixKey)
 
         const schedule = {
                              "name": "meeting 1",

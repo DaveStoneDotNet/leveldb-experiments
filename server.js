@@ -68,10 +68,6 @@ function getDbKey(unixKey) {
     return typeof unixKey === 'number' ? (unixKey < 0 ? `0${(-unixKey).toString().padStart(constants.DBKEYPADDING, '0')}` : `1${unixKey.toString().padStart(constants.DBKEYPADDING, '0')}`) : unixKey
 }
 
-function getUnixDate(unixKey) {
-    return 'TODO'
-}
-
 function getNextDbKey(unixKey) {
 
     const validatedUnixKey = getUnixKey(unixKey)
@@ -85,6 +81,10 @@ function getNextDbKey(unixKey) {
             .then((jsonSchedules, err) => {
 
                 if (err) { console.log('LIST SCHEDULE ERROR', err) }
+
+                // If any schedules exist in the provided one-second time-frame, 
+                // get the last one and increment it by one. Otherwise, just 
+                // return the DbKey version of the 'unixKey' provided.
 
                 if (jsonSchedules && jsonSchedules.size > 0) {
                     nextUnixKey = getUnixKey([...jsonSchedules.keys()].sort().pop()) + 1 // CAUTION: The key is returned as a STRING
@@ -348,7 +348,6 @@ module.exports = {
     insertSchedule,
     getUnixKey,
     getDbKey,
-    getUnixDate,
     getNextDbKey,
     putSchedule,
     getSchedule,
