@@ -6,6 +6,9 @@ const constants = require('../constants')
 
 describe('Server', function () {
 
+    const INSERT_DATE        = '10/05/2017 05:00 PM'
+    const DUPLICATE_KEY_DATE = '10/07/2017 07:00 PM'
+
     //#region Docs
     // 
     // ---------------------------------------------------------------------
@@ -94,57 +97,78 @@ describe('Server', function () {
 
     })
 
-    it('should test duplicate key insertion', function () {
+    it('should test insertSchedule', function () {
 
-        const month = moment().month()
-        const day = moment().month()
-        const year = moment().year()
-        const hour = moment().hour()
-        const minute = moment().minute()
-
-        const now = moment().year(year).month(month).date(day).hour(hour).minute(minute).seconds(0).milliseconds(0)
-        const nowText = now.format(constants.DATETIMEFORMAT)
-        const nowUnix = now.valueOf()
-        const hourLater = now.add(1, 'hour')
-        const hourLaterText = hourLater.format(constants.DATETIMEFORMAT)
-
-        const dbKey = server.getDbKey(nowUnix)
+        const testMoment = moment(INSERT_DATE, constants.DATETIMEFORMAT)
+        
+        const unixKey  = testMoment.valueOf()
+        const dbKey      = server.getDbKey(unixKey)
 
         const schedule = {
-            "name": "meeting 1",
-            "type": "user",
-            "start": nowText,
-            "end": hourLaterText
-        }
+                             "name": "meeting 1",
+                             "type": "user",
+                             "start": INSERT_DATE,
+                             "end":   testMoment.add(1, 'hour').format(constants.DATETIMEFORMAT)
+                         }
+
+       // Delete any previous test records first.
+
+        server.delSchedule(unixKey)
+            .then((dbKey)         => { return server.insertSchedule(schedule) })
+            .then((dbKey)         => {
+                                          expect(dbKey).to.equal(server.getDbKey(unixKey))
+                                          return server.getSchedules(unixKey) 
+                                     })
+            .then((jsonSchedules) => {
+                                         const insertedKey = jsonSchedules.keys().next().value
+                                         expect(insertedKey).to.equal(dbKey)
+                                         expect(jsonSchedules.size).to.equal(1)
+                                     })
+            .catch((err) => console.log('ERROR: ', err))
+
+    })
+
+    it('should test duplicate key insertion', function () {
+
+        const testMoment = moment(DUPLICATE_KEY_DATE, constants.DATETIMEFORMAT)
+
+        const unixKey_A  = testMoment.valueOf()
+        const unixKey_B  = unixKey_A + 1
+        const unixKey_C  = unixKey_A + 2
+        const dbKey      = server.getDbKey(unixKey_A)
+
+        const schedule = {
+                             "name": "meeting 1",
+                             "type": "user",
+                             "start": DUPLICATE_KEY_DATE,
+                             "end":   testMoment.add(1, 'hour').format(constants.DATETIMEFORMAT)
+                         }
 
         // Insert three separate schedules and ensure that 'duplicate' schedules occuring at the same time
         // have the millisecond portion incremented.
 
-        // Currently this test is flawed because it can only be successfully run once a minute. There's only 
-        // a function to delete a *singular* schedule instead of many. This test would need to potentially
-        // delete many schedules, not just one.
+       // Delete any previous test records first.
 
-        server.delSchedule(nowUnix)
-            .then((delDbKey)      => {
-                                         expect(delDbKey).to.equal(dbKey)
-                                         return server.insertSchedule(schedule) 
-                                     })
+        server.delSchedule(unixKey_A)
+            .then((dbKey)         => { return server.delSchedule(unixKey_B)   })
+            .then((dbKey)         => { return server.delSchedule(unixKey_C)   })
+            .then((dbKey)         => { return server.insertSchedule(schedule) })
             .then((dbKey_A)       => {
                                          expect(dbKey_A).to.equal(dbKey)
                                          return server.insertSchedule(schedule) 
                                      })
             .then((dbKey_B)       => {
-                                          expect(dbKey_B).to.equal(server.getDbKey(nowUnix + 1))
+                                          expect(dbKey_B).to.equal(server.getDbKey(unixKey_A + 1))
                                           return server.insertSchedule(schedule) 
                                      })
             .then((dbKey_C)       => {
-                                          expect(dbKey_C).to.equal(server.getDbKey(nowUnix + 2))
-                                          return server.getSchedules(nowUnix, nowUnix + constants.SECOND) 
+                                          expect(dbKey_C).to.equal(server.getDbKey(unixKey_A + 2))
+                                          return server.getSchedules(unixKey_A, unixKey_A + constants.SECOND) 
                                      })
             .then((jsonSchedules) => {
                                          expect(jsonSchedules.size).to.equal(3)
                                      })
-            .catch((err) => console.log('FINAL ERROR: ', err))
+            .catch((err) => console.log('ERROR: ', err))
 
     })
 

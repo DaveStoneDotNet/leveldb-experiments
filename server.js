@@ -40,8 +40,6 @@ function insertSchedule(jsonSchedule) {
 
     return new Promise((resolve, reject) => {
 
-        //let nextUnixKey = unixKey
-
         getNextDbKey(unixKey)
             .then((nextDbKey, err) => {
                 putSchedule(nextDbKey, jsonSchedule)
@@ -107,6 +105,11 @@ function getNextDbKey(unixKey) {
 function unixKeyToDateTimeText(unixKey) {
     return moment(unixKey).format(constants.MILLISECONDFORMAT)
 }
+
+function unixKeyFromDateTimeText(dateTimeText) {
+    return moment(dateTimeText, constants.DATETIMEFORMAT).valueOf()
+}
+
 // ----------------------------------------------------------------------------------
 
 function putSchedule(dbKey, jsonSchedule) {
@@ -155,15 +158,23 @@ function getSchedule(unixKey) {
 
 function getSchedules(unixStartKey, unixEndKey) {
 
-    const dbStartKey = getDbKey(unixStartKey)
-    const dbEndKey = getDbKey(unixEndKey)
+    let options = {}
+    if (unixStartKey) {
+
+        if (!unixEndKey) {
+            unixEndKey = unixStartKey + constants.SECOND
+        }
+        const dbStartKey = getDbKey(unixStartKey)
+        const dbEndKey = getDbKey(unixEndKey)
+        options = {
+            gte: dbStartKey,
+            lt:  dbEndKey
+        }
+    }
 
     return new Promise((resolve, reject) => {
         const schedules = new Map()
-        schedulesDb.createReadStream({
-                gte: dbStartKey,
-                lte: dbEndKey
-            })
+        schedulesDb.createReadStream(options)
             .on('data', (jsonSchedule) => {
                 schedules.set(jsonSchedule.key, jsonSchedule.value)
             })
@@ -218,39 +229,16 @@ function updateSchedule(dbKey, jsonSchedule) {
 
 function tester() {
 
-    const month = moment().month()
-    const day = moment().month()
-    const year = moment().year()
-    const hour = moment().hour()
-    const minute = moment().minute()
-
-    const now = moment().year(year).month(month).date(day).hour(hour).minute(minute).seconds(0).milliseconds(0)
-    const nowText = now.format(constants.DATETIMEFORMAT)
-    const nowUnix = now.valueOf()
-    const hourLater = now.add(1, 'hour')
-    const hourLaterText = hourLater.format(constants.DATETIMEFORMAT)
-
-    const dbKey = getDbKey(nowUnix)
-
-    const schedule = {
-                         'name': 'meeting 1',
-                         'type': 'user',
-                         'start': nowText,
-                         'end':   hourLaterText
-                     }
-
-    delSchedule(nowUnix)
-        .then((dbKey_O) => { return insertSchedule(schedule) })
-        .then((dbKey_A) => { return insertSchedule(schedule) })
-        .then((dbKey_B) => { return insertSchedule(schedule) })
-        .then((dbKey_C) => {
-                               const unixStartKey = nowUnix
-                               const unixEndKey = unixStartKey + constants.SECOND
-                               return getSchedules(unixStartKey, unixEndKey)
-                           }
-             )
-        .then((scheduleMap) => console.log('DONE', scheduleMap.size))
-        .catch((err) => console.log('ERR:', err))
+    const startUnixKey = moment('10/09/2017 07:52 AM', constants.DATETIMEFORMAT).valueOf()
+    const endUnixKey = moment('10/09/2017 08:00 AM', constants.DATETIMEFORMAT).valueOf()
+    getSchedules(startUnixKey)
+        .then((schedules) => {
+            schedules.forEach((schedule, key) => {
+                const unixKey = getUnixKey(key)
+                const unixDate = moment(unixKey).format(constants.MILLISECONDFORMAT)
+                console.log(`${unixKey} : ${unixDate} : ${schedule.start}`)
+            })
+        })
 }
 
 function main() {
