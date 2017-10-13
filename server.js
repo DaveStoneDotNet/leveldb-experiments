@@ -1,5 +1,6 @@
 const level = require('level')
 const moment = require('moment')
+const bytewise = require('bytewise')
 
 const schedulesJson = require('./schedules')
 const recurringJson = require('./recurring')
@@ -36,11 +37,11 @@ function forEachPromise(items, fn) {
 
 function insertSchedule(jsonSchedule) {
 
-    const unixKey = moment(jsonSchedule.start, constants.DATETIMEFORMAT).valueOf()
+    const encodedDbStartKey = getEncodedDbKey(jsonSchedule.start)
 
     return new Promise((resolve, reject) => {
 
-        getNextDbKey(unixKey)
+        getNextDbKey(encodedDbStartKey)
             .then((nextDbKey, err) => {
                 putSchedule(nextDbKey, jsonSchedule)
                     .then((putDbKey) => resolve(putDbKey))
@@ -58,26 +59,20 @@ function insertSchedule(jsonSchedule) {
 // ----------------------------------------------------------------------------------
 
 function getUnixKey(dbKey) {
-
-    if (typeof dbKey === 'number') { return dbKey }
-    if (typeof dbKey !== 'string') { throw new Error('NOT A STRING') }
-    return dbKey.startsWith('0') ? -(dbKey.substring(1)) : Number(dbKey.substring(1))
+    return bytewise.decode(dbKey)
 }
 
 function getDbKey(unixKey) {
-    return typeof unixKey === 'number' ? (unixKey < 0 ? `0${(-unixKey).toString().padStart(constants.DBKEYPADDING, '0')}` : `1${unixKey.toString().padStart(constants.DBKEYPADDING, '0')}`) : unixKey
+    return bytewise.encode(unixKey).toString()
 }
 
-function getNextDbKey(unixKey) {
+function getNextDbKey(encodedDbStartKey) {
 
-    const validatedUnixKey = getUnixKey(unixKey)
-
-    let nextUnixKey = validatedUnixKey
-    const unixStartKey = validatedUnixKey
-    const unixEndKey = unixStartKey + constants.SECOND
+    let nextUnixKey = encodedDbStartKey
+    const encodedDbEndKey = getNextSecondEncodedDbKey(encodedDbStartKey)
 
     return new Promise((resolve, reject) => {
-        getSchedules(unixStartKey, unixEndKey)
+        getSchedules(encodedDbStartKey, encodedDbEndKey)                          // encodedDbStartKey, encodedDbEndKey
             .then((jsonSchedules, err) => {
 
                 if (err) { console.log('LIST SCHEDULE ERROR', err) }
@@ -86,11 +81,11 @@ function getNextDbKey(unixKey) {
                 // get the last one and increment it by one. Otherwise, just 
                 // return the DbKey version of the 'unixKey' provided.
 
-                if (jsonSchedules && jsonSchedules.size > 0) {
-                    nextUnixKey = getUnixKey([...jsonSchedules.keys()].sort().pop()) + 1 // CAUTION: The key is returned as a STRING
-                }
+                // if (jsonSchedules && jsonSchedules.size > 0) {
+                //     nextUnixKey = getUnixKey([...jsonSchedules.keys()].sort().pop()) + 1 // CAUTION: The key is returned as a STRING
+                // }
 
-                const nextDbKey = getDbKey(nextUnixKey)
+                const nextDbKey = encodedDbStartKey
 
                 resolve(nextDbKey)
 
@@ -107,7 +102,7 @@ function unixKeyToDateTimeText(unixKey) {
 }
 
 function unixKeyFromDateTimeText(dateTimeText) {
-    return moment(dateTimeText, constants.DATETIMEFORMAT).valueOf()
+    return moment(dateTimeText, constants.MILLISECONDFORMAT).valueOf()
 }
 
 // ----------------------------------------------------------------------------------
@@ -128,12 +123,10 @@ function putSchedule(dbKey, jsonSchedule) {
 
 }
 
-function getSchedule(unixKey) {
-
-    const dbKey = getDbKey(unixKey)
+function getSchedule(encodedDbKey) {
 
     return new Promise((resolve, reject) => {
-        schedulesDb.get(dbKey, (err, value) => {
+        schedulesDb.get(encodedDbKey, (err, value) => {
             if (err) {
                 if (err.notFound) {
                     resolve({
@@ -156,19 +149,24 @@ function getSchedule(unixKey) {
 
 }
 
-function getSchedules(unixStartKey, unixEndKey) {
+function getNextSecondEncodedDbKey(encodedDbKey) {
+    return getEncodedDbKey(getDecodedDbKeyMoment(encodedDbKey).add(1, 'ms'))      // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< BUG
+}
+
+function getSchedules(encodedDbStartKey, encodedDbEndKey) {
 
     let options = {}
-    if (unixStartKey) {
+    if (encodedDbStartKey) {
 
-        if (!unixEndKey) {
-            unixEndKey = unixStartKey + constants.SECOND
+        if (!encodedDbEndKey) {
+            encodedDbEndKey = getNextSecondEncodedDbKey(encodedDbStartKey)
         }
-        const dbStartKey = getDbKey(unixStartKey)
-        const dbEndKey = getDbKey(unixEndKey)
+
+        console.log(`DB SEARCH KEYS: ${encodedDbStartKey} : ${encodedDbEndKey} : ${getDecodedDbKeyDateText(encodedDbStartKey)} : ${getDecodedDbKeyDateText(encodedDbEndKey)}`)
+
         options = {
-            gte: dbStartKey,
-            lt:  dbEndKey
+            gte: encodedDbStartKey,
+            lt:  encodedDbEndKey
         }
     }
 
@@ -176,6 +174,8 @@ function getSchedules(unixStartKey, unixEndKey) {
         const schedules = new Map()
         schedulesDb.createReadStream(options)
             .on('data', (jsonSchedule) => {
+                const decodedDbKey = getDecodedDbKeyDateText(jsonSchedule.key)
+                console.log(`DB RESULT KEYS: ${jsonSchedule.key} : ${decodedDbKey}`)
                 schedules.set(jsonSchedule.key, jsonSchedule.value)
             })
             .on('error', (err) => {
@@ -190,15 +190,13 @@ function getSchedules(unixStartKey, unixEndKey) {
 
 function delSchedule(dbKey) {
 
-    const validatedDbKey = getDbKey(dbKey)
-
     return new Promise((resolve, reject) => {
-        schedulesDb.del(validatedDbKey, (err, value) => {
+        schedulesDb.del(dbKey, (err, value) => {
             if (err) {
                 console.log('GET ERROR', err)
                 reject(err)
             }
-            resolve(validatedDbKey)
+            resolve(dbKey)
         })
     })
 
@@ -227,22 +225,55 @@ function updateSchedule(dbKey, jsonSchedule) {
 
 }
 
+
+function getEncodedDbKey(dateTime) {
+    if (typeof dateTime === 'string') { return bytewise.encode(moment(dateTime, constants.MILLISECONDFORMAT).toDate()) }
+    if (moment.isMoment(dateTime)) { return bytewise.encode(dateTime.toDate()) }
+    return bytewise.encode(dateTime)
+}
+
+/**
+ * Returns date text in millisecond format. e.g. '10/06/2017 07:00:0.0001 PM'
+ * @param {*} encodedDbKey 
+ */
+function getDecodedDbKeyDateText(encodedDbKey) {
+    return moment(bytewise.decode(encodedDbKey)).format(constants.MILLISECONDFORMAT)
+}
+
+function getDecodedDbKeyMoment(encodedDbKey) {
+    return moment(bytewise.decode(encodedDbKey))
+}
+
 function tester() {
 
-    const startUnixKey = moment('10/09/2017 07:52 AM', constants.DATETIMEFORMAT).valueOf()
-    const endUnixKey = moment('10/09/2017 08:00 AM', constants.DATETIMEFORMAT).valueOf()
-    getSchedules(startUnixKey)
-        .then((schedules) => {
-            schedules.forEach((schedule, key) => {
-                const unixKey = getUnixKey(key)
-                const unixDate = moment(unixKey).format(constants.MILLISECONDFORMAT)
-                console.log(`${unixKey} : ${unixDate} : ${schedule.start}`)
-            })
-        })
+    // ---
+    const d1 = '10/06/2017 07:00 PM'
+    const m1 = moment(d1, constants.MILLISECONDFORMAT).toDate()
+    const e1 = bytewise.encode(m1)
+    // ---
+    const e2 = bytewise.decode(e1)
+    const m2 = moment(e2)
+    const d2 = m2.add(1, 'ms').format(constants.MILLISECONDFORMAT)
+    // ---
+
+    const t1 = getEncodedDbKey('10/06/2017 07:00 PM')
+    const t2 = getDecodedDbKeyDateText(t1)
+
+    // ---
+    const x1 = getEncodedDbKey('10/06/2017 07:00 PM')
+    const x2 = getEncodedDbKey(moment('10/06/2017 07:00 PM', constants.MILLISECONDFORMAT))
+    const x3 = getEncodedDbKey(moment('10/06/2017 07:00 PM', constants.MILLISECONDFORMAT).toDate())
+    // ---
+    const y1 = getDecodedDbKeyDateText(x1).valueOf()
+    const y2 = getDecodedDbKeyDateText(x2).valueOf()
+    const y3 = getDecodedDbKeyDateText(x3).valueOf()
+    // ---
+    
 }
 
 function main() {
 
+    seedSchedules()
     //tester()
 
     // console.log(unixKeyToDateTimeText(1507584632692))
@@ -254,7 +285,7 @@ function main() {
     // ----------------------------------------------------------------------------------
 
     // const jsonSchedule = schedulesJson[0]
-    // const unixKey = moment(jsonSchedule.start, constants.DATETIMEFORMAT).valueOf()
+    // const unixKey = moment(jsonSchedule.start, constants.MILLISECONDFORMAT).valueOf()
 
     // putSchedule(unixKey, jsonSchedule)
     //     .then((unixKey, err) => { console.log('PUT COMPLETE')   })
@@ -265,7 +296,7 @@ function main() {
     // ----------------------------------------------------------------------------------
 
     // const jsonSchedule = schedulesJson[0]
-    // const unixKey = moment(jsonSchedule.start, constants.DATETIMEFORMAT).valueOf()
+    // const unixKey = moment(jsonSchedule.start, constants.MILLISECONDFORMAT).valueOf()
 
     // jsonSchedule.name = 'UPDATED NAME 222'
 
@@ -278,7 +309,7 @@ function main() {
     // ----------------------------------------------------------------------------------
 
     // const jsonSchedule = schedulesJson[0]
-    // const unixKey = moment(jsonSchedule.start, constants.DATETIMEFORMAT).valueOf()
+    // const unixKey = moment(jsonSchedule.start, constants.MILLISECONDFORMAT).valueOf()
 
     // getSchedule(unixKey)
     //     .then((response, err) => {
@@ -296,7 +327,7 @@ function main() {
     // ----------------------------------------------------------------------------------
 
     // const jsonSchedule = schedulesJson[0]
-    // const unixKey = moment(jsonSchedule.start, constants.DATETIMEFORMAT).valueOf()
+    // const unixKey = moment(jsonSchedule.start, constants.MILLISECONDFORMAT).valueOf()
 
     // delSchedule(unixKey)
     //     .then((jsonSchedule, err) => {
@@ -309,10 +340,10 @@ function main() {
     // LIST
     // ----------------------------------------------------------------------------------
 
-    // const unixStartKey = moment('10/06/2017 07:00 PM', constants.DATETIMEFORMAT).valueOf()
-    // const unixEndKey = unixStartKey + constants.SECOND
+    // const encodedDbStartKey = getEncodedDbKey('10/06/2017 07:00 PM')
+    // const encodedDbEndKey = getEncodedDbKey('10/06/2018 08:00 PM')
 
-    // getSchedules(unixStartKey, unixEndKey)
+    // getSchedules()
     //     .then((jsonSchedules, err) => {
     //         if (err) console.log('LIST SCHEDULE ERROR', err)
     //         jsonSchedules.forEach((value, key) => console.log(`LIST KEY: ${key} : ${typeof key} : VALUE: ${value.start} : ${value.name}`))
@@ -323,7 +354,7 @@ function main() {
     // GET NEXT KEY
     // ----------------------------------------------------------------------------------
 
-    // const unixStartKey = moment('10/06/2017 07:00 PM', constants.DATETIMEFORMAT).valueOf()
+    // const unixStartKey = moment('10/06/2017 07:00 PM', constants.MILLISECONDFORMAT).valueOf()
 
     // getNextDbKey(unixStartKey)
     //     .then((nextUnixKey, err) => {
