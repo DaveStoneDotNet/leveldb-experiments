@@ -2,13 +2,18 @@ const expect = require('chai').expect
 const moment = require('moment')
 
 const server = require('../server.js')
+const DbKeys = require('../dbKeys')
 const constants = require('../constants')
 
 describe('Server', function () {
 
     const INSERT_DATE        = '10/05/2017 05:00 PM'
+    const NEXT_KEY_DATE      = '10/06/2017 06:00 PM'
     const DUPLICATE_KEY_DATE = '10/07/2017 07:00 PM'
-
+    const DELETE_DATE        = '10/08/2017 08:00 PM'
+    const GET_DATE           = '10/09/2017 09:00 PM'
+    const UPDATE_DATE        = '10/10/2017 10:00 PM'
+    
     //#region Docs
     // 
     // ---------------------------------------------------------------------
@@ -55,62 +60,107 @@ describe('Server', function () {
     // 
     //#endregion Docs
 
-    it('should test getUnixKey', function () {
+    //#region Revised Docs
+    // 
+    // Thinking about separate classes.
+    // Perhaps one for converting dates back-and-forth between bytwise keys
+    // and strings and moments, etc. Min / Max dates, date utilities, etc.
+    // 
+    // Thinking of separate databases.
+    // 
+    //      - Single Schedules
+    //      - Bounded Recurring Schedules (Unbounded)
+    //          - Unbounded Recurring indicated by a Min Date.
+    // 
+    // All 'duplicate' schedules occurring at the same time would still
+    // follow the 'millisecond' rule.
+    //
+    // May possibly need a higher level class which combines and manages 
+    // these types.
+    //
+    // These classes would then be wrapped in some type of data class, 
+    // which would be nice if it could somehow be abstracted from 
+    // whatever is happening underneath. For example, swapping out 
+    // Level DB with something else. Thinking this data class should 
+    // be something like a server class which accepts requests and 
+    // returns responses (as opposed to individual parameters).
+    //
+    // All Schedules need an ID, Name, Type, and Description.
+    //
+    //#endregion Revised Docs
 
-        // Intended to convert the LevelDB ZERO-Padded 
-        // string key into a numerical Unix timestamp 
-        // which can be used to instantiate a moment date.
-        // (See 'Docs' above)
+    it('should test getEncodedDbKey', function () {
+        
+        const dateText   = '10/06/2017 07:00 PM'
+        const dateTextMs = '10/06/2017 07:00:00.000 PM'
+        
+        const a = DbKeys.getEncodedDbKey(dateText)
+        const b = DbKeys.getEncodedDbKey(moment(dateText, constants.DATETIMEFORMAT))
+        const c = DbKeys.getEncodedDbKey(moment(dateText, constants.DATETIMEFORMAT).toDate())
+    
+        const aa = DbKeys.getDecodedDateText(a)
+        const bb = DbKeys.getDecodedDateText(b)
+        const cc = DbKeys.getDecodedDateText(c)
 
-        // ---
-
-        // Positive string converts to a positive number
-        let unixKey = server.getUnixKey('101507334400000')
-        expect(unixKey).to.equal(1507334400000)
-
-        // Positive number returns the same positive number
-        unixKey = server.getUnixKey(1507334400000)
-        expect(unixKey).to.equal(1507334400000)
-
-        // Negative string converts to negative number
-        unixKey = server.getUnixKey('01507334400000')
-        expect(unixKey).to.equal(-1507334400000)
-
-        // Negative number returns the same negative number
-        unixKey = server.getUnixKey(-1507334400000)
-        expect(unixKey).to.equal(-1507334400000)
-
-        // Anything other than a string or a number should thrown an exception
-
-        expect(() => server.getUnixKey()).to.throw(Error)
-        expect(() => server.getUnixKey(null)).to.throw(Error)
-        expect(() => server.getUnixKey({})).to.throw(Error)
+        expect(aa).to.equal(dateTextMs)
+        expect(bb).to.equal(dateTextMs)
+        expect(cc).to.equal(dateTextMs)
+        
     })
 
-    it('should test getDbKey', function () {
+    it('should test getDecodedDateText', function () {
+        
+        const dateText   = '10/06/2017 07:00 PM'
+        const dateTextMs = '10/06/2017 07:00:00.000 PM'
+        
+        const dbKey = DbKeys.getEncodedDbKey(dateText)
+    
+        const decodedDateText = DbKeys.getDecodedDateText(dbKey)
 
-        // Intended to convert a numerical Unix timestamp 
-        // into a sortable, LevelDB, ZERO-Padded, string key.
-        // (See 'Docs' above)
+        expect(decodedDateText).to.equal(dateTextMs)
+        
+    })
 
-        // ---
+    it('should test getDecodedMoment', function () {
+        
+        const dateText   = '10/06/2017 07:00 PM'
+        const dateTextMs = '10/06/2017 07:00:00.000 PM'
+        
+        const dbKey = DbKeys.getEncodedDbKey(dateText)
+    
+        const decodedMoment = DbKeys.getDecodedMoment(dbKey)
+        
+        expect(moment.isMoment(decodedMoment)).to.be.true
+        expect(decodedMoment.format(constants.MILLISECONDFORMAT)).to.equal(dateTextMs)
+        
+    })
 
-        // Positive number should convert to a ZERO-padded string pre-pended with a '0'
-        let dbKey = server.getDbKey(1507334400000)
-        expect(dbKey).to.equal('101507334400000')
+    it('should test getNextMinuteEncodedDbKey', function () {
+        
+        const dateText   = '10/06/2017 07:00 PM'
+        const nextDateText = '10/06/2017 07:01:00.000 PM'
+        
+        const dbKey = DbKeys.getEncodedDbKey(dateText)
+        const nextDbKey = DbKeys.getNextMinuteEncodedDbKey(dbKey)
+        
+        const nextDbText = DbKeys.getDecodedDateText(nextDbKey)
 
-        // 'Positive' string returns the same 'positive' string
-        dbKey = server.getDbKey('101507334400000')
-        expect(dbKey).to.equal('101507334400000')
+        expect(nextDbText).to.equal(nextDateText)
+        
+    })
 
-        // Negative number should convert to a ZERO-padded string pre-pended with a '1'
-        dbKey = server.getDbKey(-1507334400000)
-        expect(dbKey, 'THIS GUY?').to.equal('001507334400000')
+    it('should test getNextMillisecondEncodedDbKey', function () {
+        
+        const dateText   = '10/06/2017 07:00 PM'
+        const nextDateText = '10/06/2017 07:00:00.001 PM'
+        
+        const dbKey = DbKeys.getEncodedDbKey(dateText)
+        const nextDbKey = DbKeys.getNextMillisecondEncodedDbKey(dbKey)
+        
+        const nextDbText = DbKeys.getDecodedDateText(nextDbKey)
 
-        // 'Negative' string returns the same 'negative' string
-        dbKey = server.getDbKey('001507334400000')
-        expect(dbKey).to.equal('001507334400000')
-
+        expect(nextDbText).to.equal(nextDateText)
+        
     })
 
     it('should test getNextDbKey', function () {
@@ -126,14 +176,35 @@ describe('Server', function () {
         // timestamp parameter provided.
         // (See 'Docs' above)
 
+        const dbKey = DbKeys.getEncodedDbKey(NEXT_KEY_DATE)
+        const nextMillisecondText = DbKeys.getDecodedDateText(DbKeys.getNextMillisecondEncodedDbKey(dbKey))
+
+        const dbKeyText = DbKeys.getDecodedDateText(dbKey)
+
+        const schedule = {
+                             "name": "meeting 1",
+                             "type": "user",
+                             "start": NEXT_KEY_DATE,
+                             "end":   moment(NEXT_KEY_DATE, constants.DATETIMEFORMAT).add(1, 'hour').format(constants.DATETIMEFORMAT)
+                         }
+
+       // Delete any previous test records first.
+
+        server.delSchedule(dbKey)
+            .then((dbKey)       => { return server.insertSchedule(schedule)  })
+            .then((insertedKey) => { return server.getNextDbKey(insertedKey) })
+            .then((nextDbKey)   => {
+                                        const nextDbText = DbKeys.getDecodedDateText(nextDbKey)
+                                        expect(nextDbText).to.equal(nextMillisecondText)
+                                   })
+            .catch((err) => console.log('ERROR: ', err))
+
     })
 
     it('should test insertSchedule', function () {
 
         const testMoment = moment(INSERT_DATE, constants.DATETIMEFORMAT)
-        
-        const unixKey  = testMoment.valueOf()
-        const dbKey    = server.getDbKey(unixKey)
+        const dbKey      = DbKeys.getEncodedDbKey(INSERT_DATE)
 
         const schedule = {
                              "name": "meeting 1",
@@ -144,57 +215,137 @@ describe('Server', function () {
 
        // Delete any previous test records first.
 
-        server.delSchedule(unixKey)
+        server.delSchedule(dbKey)
             .then((dbKey)         => { return server.insertSchedule(schedule) })
-            .then((dbKey)         => {
-                                          expect(dbKey).to.equal(server.getDbKey(unixKey))
-                                          return server.getSchedules(unixKey) 
-                                     })
+            .then((dbKey)         => { return server.getSchedules(dbKey)      })
             .then((jsonSchedules) => {
                                          const insertedKey = jsonSchedules.keys().next().value
-                                         expect(insertedKey).to.equal(dbKey)
+                                         const decodedInsertedKeyDateText = DbKeys.getDecodedDateText(insertedKey)
+                                         expect(decodedInsertedKeyDateText).to.equal(moment(INSERT_DATE, constants.MILLISECONDFORMAT).format(constants.MILLISECONDFORMAT))
                                          expect(jsonSchedules.size).to.equal(1)
                                      })
             .catch((err) => console.log('ERROR: ', err))
 
     })
 
+    it('should test delSchedule', function () {
+
+        const testMoment = moment(DELETE_DATE, constants.DATETIMEFORMAT)
+        const dbKey      = DbKeys.getEncodedDbKey(DELETE_DATE)
+
+        const schedule = {
+                             "name": "meeting 1",
+                             "type": "user",
+                             "start": DELETE_DATE,
+                             "end":   testMoment.add(1, 'hour').format(constants.DATETIMEFORMAT)
+                         }
+
+       // Delete any previous test records first.
+
+        server.delSchedule(dbKey)
+            .then((dbKey)    => { return server.insertSchedule(schedule) })
+            .then((dbKey)    => { return server.delSchedule(dbKey)      })
+            .then((dbKey)    => { return server.getSchedule(dbKey)      })
+            .then((response) => {
+                                    expect(response.exists).to.be.false
+                                })
+            .catch((err) => console.log('ERROR: ', err))
+
+    })
+
+    it('should test getSchedule', function () {
+
+        const testMoment = moment(GET_DATE, constants.DATETIMEFORMAT)
+        const dbKey      = DbKeys.getEncodedDbKey(GET_DATE)
+
+        const schedule = {
+                             "name": "meeting 1",
+                             "type": "user",
+                             "start": GET_DATE,
+                             "end":   testMoment.add(1, 'hour').format(constants.DATETIMEFORMAT)
+                         }
+
+       // Delete any previous test records first.
+
+        server.delSchedule(dbKey)
+            .then((dbKey)    => { return server.insertSchedule(schedule) })
+            .then((dbKey)    => { return server.getSchedule(dbKey)       })
+            .then((response) => {
+                                    expect(response.exists).to.be.true
+                                    expect(response.schedule.start).to.equal(GET_DATE)
+                                })
+            .catch((err) => console.log('ERROR: ', err))
+
+    })
+
+    it('should test updateSchedule', function () {
+
+        const testMoment = moment(UPDATE_DATE, constants.DATETIMEFORMAT)
+        const dbKey      = DbKeys.getEncodedDbKey(UPDATE_DATE)
+        const updateName = 'UPDATED SCHEDULE TEST'
+
+        const schedule = {
+                             "name": "meeting 1",
+                             "type": "user",
+                             "start": UPDATE_DATE,
+                             "end":   testMoment.add(1, 'hour').format(constants.DATETIMEFORMAT)
+                         }
+
+       // Delete any previous test records first.
+
+        server.delSchedule(dbKey)
+            .then((dbKey)    => { return server.insertSchedule(schedule) })
+            .then((dbKey)    => { 
+                                    schedule.name = updateName
+                                    return server.updateSchedule(dbKey, schedule) 
+                                })
+            .then((schedule) => {
+                                    expect(schedule.name).to.equal(updateName)
+                                })
+            .catch((err) => console.log('ERROR: ', err))
+
+    })
+
+    
     it('should test duplicate key insertion', function () {
 
-        const testMoment = moment(DUPLICATE_KEY_DATE, constants.DATETIMEFORMAT)
+        // Insert three separate schedules and ensure that 'duplicate' schedules occuring at the same time
+        // have the millisecond portion incremented.
 
-        const unixKey_A  = testMoment.valueOf()
-        const unixKey_B  = unixKey_A + 1
-        const unixKey_C  = unixKey_A + 2
-        const dbKey      = server.getDbKey(unixKey_A)
+        const dbKey_A = DbKeys.getEncodedDbKey(DUPLICATE_KEY_DATE)
+        const dbKey_B = DbKeys.getNextMillisecondEncodedDbKey(dbKey_A)
+        const dbKey_C = DbKeys.getNextMillisecondEncodedDbKey(dbKey_B)
+
+        const nextMinuteDbKey = DbKeys.getNextMinuteEncodedDbKey(dbKey_A)
+        
+        const dbKeyText_A = DbKeys.getDecodedDateText(dbKey_A)
+        const dbKeyText_B = DbKeys.getDecodedDateText(dbKey_B)
+        const dbKeyText_C = DbKeys.getDecodedDateText(dbKey_C)
 
         const schedule = {
                              "name": "meeting 1",
                              "type": "user",
                              "start": DUPLICATE_KEY_DATE,
-                             "end":   testMoment.add(1, 'hour').format(constants.DATETIMEFORMAT)
+                             "end":   moment(DUPLICATE_KEY_DATE, constants.DATETIMEFORMAT).add(1, 'hour').format(constants.DATETIMEFORMAT)
                          }
-
-        // Insert three separate schedules and ensure that 'duplicate' schedules occuring at the same time
-        // have the millisecond portion incremented.
 
        // Delete any previous test records first.
 
-        server.delSchedule(unixKey_A)
-            .then((dbKey)         => { return server.delSchedule(unixKey_B)   })
-            .then((dbKey)         => { return server.delSchedule(unixKey_C)   })
+        server.delSchedule(dbKey_A)
+            .then((dbKey)         => { return server.delSchedule(dbKey_B)     })
+            .then((dbKey)         => { return server.delSchedule(dbKey_C)     })
             .then((dbKey)         => { return server.insertSchedule(schedule) })
-            .then((dbKey_A)       => {
-                                         expect(dbKey_A).to.equal(dbKey)
+            .then((insertedKey_A) => {
+                                         expect(DbKeys.getDecodedDateText(insertedKey_A)).to.equal(dbKeyText_A)
                                          return server.insertSchedule(schedule) 
                                      })
-            .then((dbKey_B)       => {
-                                          expect(dbKey_B).to.equal(server.getDbKey(unixKey_A + 1))
-                                          return server.insertSchedule(schedule) 
+            .then((insertedKey_B) => {
+                                         expect(DbKeys.getDecodedDateText(insertedKey_B)).to.equal(dbKeyText_B)
+                                         return server.insertSchedule(schedule) 
                                      })
-            .then((dbKey_C)       => {
-                                          expect(dbKey_C).to.equal(server.getDbKey(unixKey_A + 2))
-                                          return server.getSchedules(unixKey_A, unixKey_A + constants.SECOND) 
+            .then((insertedKey_C) => {
+                                         expect(DbKeys.getDecodedDateText(insertedKey_C)).to.equal(dbKeyText_C)
+                                         return server.getSchedules(dbKey_A, nextMinuteDbKey) 
                                      })
             .then((jsonSchedules) => {
                                          expect(jsonSchedules.size).to.equal(3)
