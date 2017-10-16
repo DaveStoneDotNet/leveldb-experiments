@@ -153,4 +153,29 @@
 // the two types, you will potentially have to add to one category while also deleting from the other.
 //  This could complicate things if other categories are needed.
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+// 
+// Thinking about separate classes.
+// Perhaps one for converting dates back-and-forth between bytwise keys
+// and strings and moments, etc. Min / Max dates, date utilities, etc.
+// 
+// Thinking of separate databases.
+// 
+//      - Single Schedules
+//      - Bounded Recurring Schedules (Unbounded)
+//          - Unbounded Recurring indicated by a Min Date.
+// 
+// All 'duplicate' schedules occurring at the same time would still
+// follow the 'millisecond' rule.
+//
+// May possibly need a higher level class which combines and manages 
+// these types.
+//
+// These classes would then be wrapped in some type of data class, 
+// which would be nice if it could somehow be abstracted from 
+// whatever is happening underneath. For example, swapping out 
+// Level DB with something else. Thinking this data class should 
+// be something like a server class which accepts requests and 
+// returns responses (as opposed to individual parameters).
+//
+// All Schedules need an ID, Name, Type, and Description.
+// 
