@@ -2,7 +2,7 @@ const level = require('level')
 const moment = require('moment')
 const bytewise = require('bytewise')
 
-const constants = require('./constants')
+const constants = require('./Constants')
 const Common = require('./Common')
 const DbKeys = require('./DbKeys')
 
@@ -181,7 +181,16 @@ class SchedulesDb {
         })
     
     }
-    
+
+    list() {
+        this.getSchedules()
+        .then((schedules) => {
+            let index = 0
+            console.log(`${schedules.size} SCHEDULES`)
+            schedules.forEach((s) => console.log(`${++index} | ${s.name} | ${s.type} | ${s.start} | ${s.end}`))
+        })
+    }
+
     seedDb() {
     
         Common.forEachPromise(schedulesJson, this.insertSchedule)

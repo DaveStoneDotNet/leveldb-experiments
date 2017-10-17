@@ -3,7 +3,7 @@ const moment = require('moment')
 const bytewise = require('bytewise')
 const uuid = require('uuid/v1')
 
-const constants = require('./constants')
+const constants = require('./Constants')
 
 const DbKeys = require('./DbKeys')
 const SchedulesDb = require('./SchedulesDb')
@@ -11,30 +11,34 @@ const RecurringDb = require('./RecurringDb')
 
 const Schedules = require('./Schedules')
 
+function RunDbKey() {
+
+    const dateText   = '10/06/2017 07:00 PM'
+    const dateTextMs = '10/06/2017 07:00:00.000 PM'
+    
+    const a = DbKeys.getEncodedDbKey(dateText)
+    const b = DbKeys.getEncodedDbKey(moment(dateText, constants.DATETIMEFORMAT))
+    const c = DbKeys.getEncodedDbKey(moment(dateText, constants.DATETIMEFORMAT).toDate())
+
+    const aa = DbKeys.getDecodedDateText(a)
+    const bb = DbKeys.getDecodedDateText(b)
+    const cc = DbKeys.getDecodedDateText(c)
+}
+
 function main() {
 
-    const mon =  1
-    const tue =  2
-    const wed =  4
-    const thu =  8
-    const fri = 16
-    const sat = 32
-    const sun = 64
+    //RunDbKey()
 
-    const days = wed | sun
+    // const schedulesDb = new SchedulesDb()
+    // schedulesDb.seedDb()
+    // schedulesDb.list()
 
-    // Expect wed and sun...
+    // const recurringDb = new RecurringDb()
+    // recurringDb.seedDb()
+    // recurringDb.list()
 
-    if (days & mon) console.log('mon')
-    if (days & tue) console.log('tue')
-    if (days & wed) console.log('wed')
-    if (days & thu) console.log('thu')
-    if (days & fri) console.log('fri')
-    if (days & sat) console.log('sat')
-    if (days & sun) console.log('sun')
-    
-    const id = uuid()
-    console.log(id)
+    // const schedules = new Schedules()
+    // schedules.list('10/01/2017', '10/31/2017')
 }
 
 main()

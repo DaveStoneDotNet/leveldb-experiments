@@ -1,6 +1,6 @@
 const moment = require('moment')
 
-const constants = require('./constants')
+const constants = require('./Constants')
 
 class Common {
 

@@ -1,6 +1,6 @@
 const moment = require('moment')
 
-const constants = require('./constants')
+const constants = require('./Constants')
 
 const Common = require('./Common')
 const DbKeys = require('./DbKeys')
@@ -38,14 +38,19 @@ class Schedules {
     }
     
     getDaysArray(recurringSchedule) {
+
         let days = []
-        if (recurringSchedule.sun) days.push(0)
-        if (recurringSchedule.mon) days.push(1)
-        if (recurringSchedule.tue) days.push(2)
-        if (recurringSchedule.wed) days.push(3)
-        if (recurringSchedule.thu) days.push(4)
-        if (recurringSchedule.fri) days.push(5)
-        if (recurringSchedule.sat) days.push(6)
+
+        if (recurringSchedule.days) {
+            if (recurringSchedule.days & constants.SUN) days.push(0)
+            if (recurringSchedule.days & constants.MON) days.push(1)
+            if (recurringSchedule.days & constants.TUE) days.push(2)
+            if (recurringSchedule.days & constants.WED) days.push(3)
+            if (recurringSchedule.days & constants.THU) days.push(4)
+            if (recurringSchedule.days & constants.FRI) days.push(5)
+            if (recurringSchedule.days & constants.SAT) days.push(6)
+        }
+
         return days
     }
 
@@ -53,10 +58,11 @@ class Schedules {
 
         const includedSchedules = new Set()
 
-        const startMoment = moment(start, constants.DATETIMEFORMAT)
-        const endMoment = moment(end, constants.DATETIMEFORMAT)
         const days = this.getDaysArray(recurringSchedule)
-        
+
+        const startMoment = moment(start, constants.DATETIMEFORMAT)
+        const endMoment   = moment(end,   constants.DATETIMEFORMAT).add(1, 'day')
+
         const scheduleStartMoment = Common.getDateTimeMoment(recurringSchedule.startdate)
         const scheduleEndMoment   = Common.getDateTimeMoment(recurringSchedule.enddate).add(1, 'day')
 
@@ -67,7 +73,8 @@ class Schedules {
             if (isIncluded) {
 
                 const isInRange = (m.isSame(scheduleStartMoment) || m.isAfter(scheduleStartMoment)) && m.isBefore(scheduleEndMoment)
-                console.log(`NAME: ${recurringSchedule.name} : IS IN RANGE: ${isInRange} : DATE: ${m.format(constants.DATEFORMAT)} : START: ${scheduleStartMoment.format(constants.DATEFORMAT)} : END: ${scheduleEndMoment.format(constants.DATEFORMAT)} : IS BEFORE: ${m.isBefore(scheduleEndMoment)} : IS AFTER: ${m.isAfter(scheduleStartMoment)} : IS SAME: ${m.isSame(scheduleStartMoment)}`)
+                
+                //console.log(`NAME: ${recurringSchedule.name} : IS IN RANGE: ${isInRange} : DATE: ${m.format(constants.DATEFORMAT)} : START: ${scheduleStartMoment.format(constants.DATEFORMAT)} : END: ${scheduleEndMoment.format(constants.DATEFORMAT)} : IS BEFORE: ${m.isBefore(scheduleEndMoment)} : IS AFTER: ${m.isAfter(scheduleStartMoment)} : IS SAME: ${m.isSame(scheduleStartMoment)}`)
 
                 if (isInRange)
                 {
@@ -95,8 +102,8 @@ class Schedules {
             this.RecurringDb.getSchedules(encodedDbStartKey, encodedDbEndKey)
                 .then((recurringSchedules) => {
 
-                    const start = DbKeys.getDecodedDateText(encodedDbStartKey)
-                    const end   = DbKeys.getDecodedDateText(encodedDbEndKey)
+                    const start = encodedDbStartKey ? DbKeys.getDecodedDateText(encodedDbStartKey) : null
+                    const end   = encodedDbEndKey   ? DbKeys.getDecodedDateText(encodedDbEndKey)   : null
 
                     recurringSchedules.forEach((recurringSchedule, key) => {
 
@@ -108,17 +115,17 @@ class Schedules {
                 })
                 .catch((err) => reject(err))
             })
-    
     }
     
     getSchedules(start, end) {
 
         let schedules = new Set()
         
-        const encodedDbStartKey = DbKeys.getEncodedDbKey(start)
-        const encodedDbEndKey   = DbKeys.getEncodedDbKey(end)
-
         return new Promise((resolve, reject) => {
+
+            const encodedDbStartKey = DbKeys.getEncodedDbKey(start)
+            const encodedDbEndKey   = DbKeys.getEncodedDbKey(end)
+
             this.getMappedSchedules(encodedDbStartKey, encodedDbEndKey)
                 .then((mappedSchedules) => {
                     schedules = mappedSchedules
@@ -138,7 +145,7 @@ class Schedules {
         return new Promise((resolve, reject) => { 
 
             const start = moment().startOf('day').format(constants.DATEFORMAT)
-            const end = moment().startOf('day').add(1, 'day').format(constants.DATEFORMAT)
+            const end   = moment().startOf('day').add(1, 'day').format(constants.DATEFORMAT)
 
             this.getSchedules(start, end)
                 .then((todaysSchedules) => {
@@ -147,6 +154,16 @@ class Schedules {
                 .catch((err) => reject(err))
         })
     }
+
+    list(start, end) {
+        this.getSchedules(start, end)
+        .then((schedules) => {
+            let index = 0
+            console.log(`${schedules.size} COMBINED SCHEDULES`)
+            schedules.forEach((s) => console.log(`${++index} | ${s.name} | ${s.type} | ${s.start} | ${s.end} | ${s.isRecurring}`))
+        })
+    }
+
 }
 
 module.exports = Schedules
