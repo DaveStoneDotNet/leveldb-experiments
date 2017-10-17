@@ -1,0 +1,66 @@
+[
+    {
+        "name": "weekday",
+        "type": "system",
+        "starttime": "05:30 AM",
+        "endtime": "09:00 PM",
+        "mon": 1,
+        "tue": 1,
+        "wed": 1,
+        "thu": 1,
+        "fri": 1,
+        "sat": 0,
+        "sun": 0
+      },
+      {
+        "name": "work",
+        "type": "system",
+        "starttime": "06:00 AM",
+        "endtime": "04:00 PM",
+        "mon": 1,
+        "tue": 1,
+        "wed": 1,
+        "thu": 1,
+        "fri": 1,
+        "sat": 0,
+        "sun": 0
+      },
+      {
+        "name": "weekend",
+        "type": "system",
+        "starttime": "07:00 AM",
+        "endtime": "11:00 PM",
+        "mon": 0,
+        "tue": 0,
+        "wed": 0,
+        "thu": 0,
+        "fri": 0,
+        "sat": 1,
+        "sun": 1
+      }, 
+      {
+        "name": "weekend",
+        "type": "system",
+        "starttime": "07:00 AM",
+        "endtime": "11:00 PM",
+        "days": {
+            "mon": 0,
+            "tue": 0,
+            "wed": 0,
+            "thu": 0,
+            "fri": 0,
+            "sat": 1,
+            "sun": 1
+            }
+      }, 
+      {
+        "name": "birthday",
+        "type": "birthday",
+        "eventdate": "03/07/1962"
+      }, 
+      {
+        "name": "anniversary",
+        "type": "anniversary",
+        "eventdate": "09/14/1998"
+      }
+]

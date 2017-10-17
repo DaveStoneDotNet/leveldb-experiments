@@ -12,7 +12,8 @@
     "dependencies": {
         "bytewise": "^1.1.0",
         "level": "^1.7.0",
-        "moment": "^2.18.1"
+        "moment": "^2.18.1",
+        "uuid": "^3.1.0"
     },
     "devDependencies": {
         "chai": "^4.1.2",

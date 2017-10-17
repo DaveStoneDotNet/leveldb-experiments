@@ -1,6 +1,7 @@
 const level = require('level')
 const moment = require('moment')
 const bytewise = require('bytewise')
+const uuid = require('uuid/v1')
 
 const constants = require('./constants')
 
@@ -12,52 +13,28 @@ const Schedules = require('./Schedules')
 
 function main() {
 
-    // const schedulesDb = new SchedulesDb()
-    // const recurringDb = new RecurringDb()
+    const mon =  1
+    const tue =  2
+    const wed =  4
+    const thu =  8
+    const fri = 16
+    const sat = 32
+    const sun = 64
 
-    // schedulesDb.seedDb()
-    // recurringDb.seedDb()
+    const days = wed | sun
 
-    // ----------------------------------------------------------------------------------
+    // Expect wed and sun...
 
-    // const recurringDb = new RecurringDb()
-
-    // const startKey = DbKeys.getEncodedDbKey('10/01/2017')
-    // const endKey = DbKeys.getEncodedDbKey('10/31/2017')
-
-    // recurringDb.getSchedules(startKey, endKey)
-    //     .then((combinedSchedules) => {
-    //         combinedSchedules.forEach((schedule) => {
-    //             console.log(`${schedule.startdate} - ${schedule.starttime} - ${schedule.name} - ${schedule.type}`)
-    //         })
+    if (days & mon) console.log('mon')
+    if (days & tue) console.log('tue')
+    if (days & wed) console.log('wed')
+    if (days & thu) console.log('thu')
+    if (days & fri) console.log('fri')
+    if (days & sat) console.log('sat')
+    if (days & sun) console.log('sun')
     
-    //     })
-    //     .catch((err) => console.log(err))
-
-    // ----------------------------------------------------------------------------------
-
-    const schedules = new Schedules()
-
-    schedules.getSchedules('10/01/2017', '10/31/2017')
-        .then((combinedSchedules) => {
-            combinedSchedules.forEach((schedule) => {
-                console.log(`${schedule.start} - ${schedule.isRecurring} - ${schedule.name} - ${schedule.type}`)
-            })
-    
-        })
-        .catch((err) => console.log(err))
-
-    // ----------------------------------------------------------------------------------
-
-    // schedules.getTodaysSchedules()
-    //     .then((todaysSchedules) => {
-    //         todaysSchedules.forEach((schedule) => {
-    //             console.log(`${schedule.start}`)
-    //         })    
-    //     })
-    //     .catch((err) => console.log(err))
-
-    // schedules.includeRecurring('10/01/2017', '10/10/2017')
+    const id = uuid()
+    console.log(id)
 }
 
 main()
