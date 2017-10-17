@@ -99,6 +99,7 @@ class RecurringDb {
     putSchedule(dbKey, jsonSchedule) {
     
         return new Promise((resolve, reject) => {
+            jsonSchedule.dbSource = constants.RECURRING_DB
             this.db.put(dbKey.toString(), jsonSchedule, (err) => {
                 if (err) {
                     console.log('PUT ERROR', err)
@@ -155,7 +156,6 @@ class RecurringDb {
             const schedules = new Map()
             this.db.createReadStream(options)
                 .on('data', (jsonSchedule) => {
-                    const decodedDbKey = DbKeys.getDecodedDateText(jsonSchedule.key)
                     schedules.set(jsonSchedule.key, jsonSchedule.value)
                 })
                 .on('error', (err) => {
@@ -229,7 +229,7 @@ class RecurringDb {
         .then((schedules) => {
             let index = 0
             console.log(`${schedules.size} RECURRING SCHEDULES`)
-            schedules.forEach((s) => console.log(`${++index} | ${s.name} | ${s.type} | ${s.startdate} | ${s.enddate} | ${s.starttime} | ${s.endtime} | ${s.days}`))
+            schedules.forEach((s) => console.log(`${++index} | ${s.name} | ${s.type} | ${s.startdate} | ${s.enddate} | ${s.starttime} | ${s.endtime} | ${s.days} | ${s.dbSource}`))
         })
     }
 

@@ -21,20 +21,13 @@
         "days": 96
       }, 
       {
-        "name": "weekend",
-        "type": "system",
-        "starttime": "07:00 AM",
-        "endtime": "11:00 PM",
-        "days": 96
-      }, 
-      {
         "name": "birthday",
-        "type": "birthday",
+        "type": "all-day",
         "eventdate": "03/07/1962"
       }, 
       {
         "name": "anniversary",
-        "type": "anniversary",
+        "type": "all-day",
         "eventdate": "09/14/1998"
       }
 ]

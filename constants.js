@@ -15,6 +15,10 @@ const SUN               = 64
 const WEEKDAYS          = MON | TUE | WED | THU | FRI   // 31
 const WEEKENDS          = SAT | SUN                     // 96
 
+const SCHEDULES_DB      =  'schedules'
+const RECURRING_DB      =  'recurring'
+const UNBOUNDED_DB      =  'unbounded'
+
 class Constants {
 
     static get DATEFORMAT()        { return DATEFORMAT        }
@@ -32,6 +36,10 @@ class Constants {
 
     static get WEEKDAYS() { return WEEKDAYS }
     static get WEEKENDS() { return WEEKENDS }
+
+    static get SCHEDULES_DB() { return SCHEDULES_DB }
+    static get RECURRING_DB() { return RECURRING_DB }
+    static get UNBOUNDED_DB() { return UNBOUNDED_DB }
 }
 
 module.exports = Constants
