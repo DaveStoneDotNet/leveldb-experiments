@@ -1,6 +1,6 @@
-module.exports = [
+[
     {
-      "name": "day",
+      "name": "weekday",
       "type": "system",
       "startdate": "10/05/2017",
       "enddate": "10/08/2017",
@@ -30,7 +30,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "day",
+      "name": "weekend",
       "type": "system",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -60,7 +60,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 01",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -75,7 +75,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 02",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -90,7 +90,7 @@ module.exports = [
       "sun": 1
     },
     {
-      "name": "recurring",
+      "name": "recurring 03",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -105,7 +105,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 04",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -120,7 +120,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 05",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -135,7 +135,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 06",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -150,7 +150,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 07",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -165,7 +165,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 08",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -180,7 +180,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 09",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -195,7 +195,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 10",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -210,7 +210,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 11",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -225,7 +225,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 12",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -240,7 +240,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 13",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -255,7 +255,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 14",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -270,7 +270,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 15",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -285,7 +285,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 16",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -300,7 +300,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 17",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -315,7 +315,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 18",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -330,7 +330,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 19",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -345,7 +345,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 20",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -360,7 +360,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 21",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -375,7 +375,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 22",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -390,7 +390,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 23",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -405,7 +405,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 24",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",
@@ -420,7 +420,7 @@ module.exports = [
       "sun": 0
     },
     {
-      "name": "recurring",
+      "name": "recurring 25",
       "type": "user",
       "startdate": "10/07/2017",
       "enddate": "10/08/2017",

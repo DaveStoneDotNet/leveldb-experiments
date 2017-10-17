@@ -6,7 +6,7 @@ const constants = require('./constants')
 const Common = require('./Common')
 const DbKeys = require('./DbKeys')
 
-const recurringJson = require('./recurring')
+const recurringJson = require('./seed/recurring.json')
 
 class RecurringDb {
 
@@ -25,30 +25,22 @@ class RecurringDb {
         this.updateSchedule = this.updateSchedule.bind(this)
     }
 
-    getDateTimeText(date, time) {
-        return `${date} ${time}`
-    }
-
-    getDateTimeMoment(date, time) {
-        return moment(this.getDateTimeText(date, time), constants.DATETIMEFORMAT)
-    }
-
     // ------------------------------------------------------------------------------------------------
 
     getRecurringStartDateTimeText(jsonSchedule) {
-        return this.getDateTimeText(jsonSchedule.startdate, jsonSchedule.starttime)
+        return Common.getDateTimeText(jsonSchedule.startdate, jsonSchedule.starttime)
     }
 
     getRecurringStartDateTimeMoment(jsonSchedule) {
-        return moment(this.getDateTimeText(jsonSchedule.startdate, jsonSchedule.starttime)),format(constants.DATETIMEFORMAT)
+        return moment(Common.getDateTimeText(jsonSchedule.startdate, jsonSchedule.starttime)),format(constants.DATETIMEFORMAT)
     }
 
     getRecurringEndDateTimeText(jsonSchedule) {
-        return this.getDateTimeText(jsonSchedule.enddate, jsonSchedule.endtime)
+        return Common.getDateTimeText(jsonSchedule.enddate, jsonSchedule.endtime)
     }
 
     getRecurringEndDateTimeMoment(jsonSchedule) {
-        return moment(this.getDateTimeText(jsonSchedule.enddate, jsonSchedule.endtime)),format(constants.DATETIMEFORMAT)
+        return moment(Common.getDateTimeText(jsonSchedule.enddate, jsonSchedule.endtime)),format(constants.DATETIMEFORMAT)
     }
 
     // ------------------------------------------------------------------------------------------------
@@ -173,6 +165,27 @@ class RecurringDb {
                     resolve(schedules)
                 })
         })
+    
+    }
+    
+    getMappedSchedules(encodedDbStartKey, encodedDbEndKey) {
+    
+        return new Promise((resolve, reject) => {
+            const schedules = new Map()
+            this.getSchedules(encodedDbStartKey, encodedDbEndKey)
+                .then((recurringSchedules) => {
+                    recurringSchedules.forEach((recurringSchedule, key) => {
+                        schedules.set(key, {
+                            "name": recurringSchedule.name,
+                            "type": recurringSchedule.type,
+                            "start": Common.getDateTimeText(recurringSchedule.startdate, recurringSchedule.starttime),
+                            "end": Common.getDateTimeText(recurringSchedule.enddate, recurringSchedule.endtime),
+                          })
+                    })
+                    resolve(schedules)
+                })
+                .catch((err) => reject(err))
+            })
     
     }
     

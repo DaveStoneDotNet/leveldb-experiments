@@ -3,6 +3,7 @@ const moment = require('moment')
 
 const constants = require('../constants')
 
+const Common = require('../Common')
 const RecurringDb = require('../RecurringDb.js')
 const DbKeys = require('../DbKeys')
 
@@ -23,11 +24,11 @@ describe('Recurring DB', function () {
     const GET_TIME           = '09:00 PM'
     const UPDATE_TIME        = '10:00 PM'
     const GET_SCHEDULES_TIME = '11:00 PM'
-    
+
     function getTestSchedule(db, date, time) {
 
-        const startDateTimeMoment = db.getDateTimeMoment(date, time)
-        const endDateTimeMoment   = db.getDateTimeMoment(date, time).add(1, 'hour')
+        const startDateTimeMoment = Common.getDateTimeMoment(date, time)
+        const endDateTimeMoment   = Common.getDateTimeMoment(date, time).add(1, 'hour')
         
         const startDateText = startDateTimeMoment.format(constants.DATEFORMAT)
         const startTimeText = startDateTimeMoment.format(constants.TIMEFORMAT)
@@ -191,6 +192,50 @@ describe('Recurring DB', function () {
             .then((insertedKey_C) => {
                                          expect(DbKeys.getDecodedDateText(insertedKey_C)).to.equal(dbKeyText_C)
                                          return db.getSchedules(dbKey_A, nextMinuteDbKey) 
+                                     })
+            .then((jsonSchedules) => {
+                                         expect(jsonSchedules.size).to.equal(3)
+                                     })
+            .catch((err) => console.log('ERROR: ', err))
+
+    })
+
+    it('should test getMappedSchedules', function () {
+
+        const db = new RecurringDb()
+
+        const testSchedule = getTestSchedule(db, GET_SCHEDULES_DATE, GET_SCHEDULES_TIME)
+        
+        // Insert three separate schedules and ensure that 'duplicate' schedules occuring at the same time
+        // have the millisecond portion incremented.
+
+        const dbKey_A = testSchedule.dbKey
+        const dbKey_B = DbKeys.getNextMillisecondEncodedDbKey(dbKey_A)
+        const dbKey_C = DbKeys.getNextMillisecondEncodedDbKey(dbKey_B)
+
+        const nextMinuteDbKey = DbKeys.getNextMinuteEncodedDbKey(dbKey_A)
+        
+        const dbKeyText_A = DbKeys.getDecodedDateText(dbKey_A)
+        const dbKeyText_B = DbKeys.getDecodedDateText(dbKey_B)
+        const dbKeyText_C = DbKeys.getDecodedDateText(dbKey_C)
+
+       // Delete any previous test records first.
+
+        db.delSchedule(dbKey_A)
+            .then((dbKey)         => { return db.delSchedule(dbKey_B)     })
+            .then((dbKey)         => { return db.delSchedule(dbKey_C)     })
+            .then((dbKey)         => { return db.insertSchedule(testSchedule.schedule) })
+            .then((insertedKey_A) => {
+                                         expect(DbKeys.getDecodedDateText(insertedKey_A)).to.equal(dbKeyText_A)
+                                         return db.insertSchedule(schedule) 
+                                     })
+            .then((insertedKey_B) => {
+                                         expect(DbKeys.getDecodedDateText(insertedKey_B)).to.equal(dbKeyText_B)
+                                         return db.insertSchedule(testSchedule.schedule) 
+                                     })
+            .then((insertedKey_C) => {
+                                         expect(DbKeys.getDecodedDateText(insertedKey_C)).to.equal(dbKeyText_C)
+                                         return db.getMappedSchedules(dbKey_A, nextMinuteDbKey) 
                                      })
             .then((jsonSchedules) => {
                                          expect(jsonSchedules.size).to.equal(3)

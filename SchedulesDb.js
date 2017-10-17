@@ -6,7 +6,7 @@ const constants = require('./constants')
 const Common = require('./Common')
 const DbKeys = require('./DbKeys')
 
-const schedulesJson = require('./schedules')
+const schedulesJson = require('./seed/schedules.json')
 
 class SchedulesDb {
 
