@@ -12,7 +12,7 @@ class SchedulesDb {
 
     constructor() {
 
-        this.db = level('./schedules', {
+        this.db = level('./data/schedules', {
             valueEncoding: 'json'
         })
 

@@ -245,6 +245,4 @@ ModelManifest.xml
 .fake/
 /ReactTests/README.md
 
-/recurring
-/schedules
-/unbounded
+/data

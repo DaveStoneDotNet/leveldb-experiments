@@ -12,7 +12,7 @@ class RecurringDb {
 
     constructor() {
 
-        this.db = level('./recurring', {
+        this.db = level('./data/recurring', {
             valueEncoding: 'json'
         })
 
