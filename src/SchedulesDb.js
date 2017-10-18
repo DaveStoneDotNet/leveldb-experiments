@@ -12,7 +12,7 @@ class SchedulesDb {
 
     constructor() {
 
-        this.db = level('../data/schedules', {
+        this.db = level('./data/schedules', {
             valueEncoding: 'json'
         })
 
@@ -107,7 +107,9 @@ class SchedulesDb {
                         })
                     }
                 }
-                if (value) value.dbKey = encodedDbKey.toString()
+                if (value) { 
+                    value.dbKey = encodedDbKey.toString() 
+                }
                 resolve({
                     exists: true,
                     schedule: value

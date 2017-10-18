@@ -17,7 +17,7 @@ const Schedules = require('./src/Schedules')
 // ------------------------------------------------------------------------------------
 
 function tester() {
-
+    console.log('')
 }
 
 function main() {
@@ -26,14 +26,14 @@ function main() {
 
     // ----------------------------------------------
 
-    const schedulesDb = new SchedulesDb()
-    schedulesDb.seedDb()
+    // const schedulesDb = new SchedulesDb()
+    // schedulesDb.seedDb()
 
-    const recurringDb = new RecurringDb()
-    recurringDb.seedDb()
+    // const recurringDb = new RecurringDb()
+    // recurringDb.seedDb()
 
-    const unboundedDb = new UnboundedDb()
-    unboundedDb.seedDb()
+    // const unboundedDb = new UnboundedDb()
+    // unboundedDb.seedDb()
 
     // ----------------------------------------------
 

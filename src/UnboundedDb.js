@@ -13,7 +13,7 @@ class UnboundedDb {
 
     constructor() {
 
-        this.db = level('../data/unbounded', {
+        this.db = level('./data/unbounded', {
             valueEncoding: 'json'
         })
 
