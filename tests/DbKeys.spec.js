@@ -5,9 +5,9 @@ const constants = require('../src/constants')
 
 const DbKeys = require('../src/DbKeys')
 
-describe('DB Keys', function () {
+describe('DB Keys', () => {
 
-    it('should test getEncodedDbKey', function () {
+    it('should test getEncodedDbKey', () => {
         
         const dateText   = '10/06/2017 07:00 PM'
         const dateTextMs = '10/06/2017 07:00:00.000 PM'
@@ -26,7 +26,7 @@ describe('DB Keys', function () {
         
     })
 
-    it('should test getDecodedDateText', function () {
+    it('should test getDecodedDateText', () => {
         
         const dateText   = '10/06/2017 07:00 PM'
         const dateTextMs = '10/06/2017 07:00:00.000 PM'
@@ -39,7 +39,7 @@ describe('DB Keys', function () {
         
     })
 
-    it('should test getDecodedMoment', function () {
+    it('should test getDecodedMoment', () => {
         
         const dateText   = '10/06/2017 07:00 PM'
         const dateTextMs = '10/06/2017 07:00:00.000 PM'
@@ -53,7 +53,7 @@ describe('DB Keys', function () {
         
     })
 
-    it('should test getNextMinuteEncodedDbKey', function () {
+    it('should test getNextMinuteEncodedDbKey', () => {
         
         const dateText   = '10/06/2017 07:00 PM'
         const nextDateText = '10/06/2017 07:01:00.000 PM'
@@ -67,7 +67,7 @@ describe('DB Keys', function () {
         
     })
 
-    it('should test getNextMillisecondEncodedDbKey', function () {
+    it('should test getNextMillisecondEncodedDbKey', () => {
         
         const dateText   = '10/06/2017 07:00 PM'
         const nextDateText = '10/06/2017 07:00:00.001 PM'

@@ -7,7 +7,7 @@ const Common = require('../src/Common')
 const RecurringDb = require('../src/RecurringDb.js')
 const DbKeys = require('../src/DbKeys')
 
-describe('Recurring DB', function () {
+describe('Recurring DB', () => {
 
     const INSERT_DATE = '05/05/2005'
     const INSERT_TIME = '05:00 PM'
@@ -23,10 +23,10 @@ describe('Recurring DB', function () {
             })
     })
 
-    function getTestSchedule(db, date, time) {
+    function getTestSchedule() {
 
-        const startDateTimeMoment = Common.getDateTimeMoment(date, time)
-        const endDateTimeMoment = Common.getDateTimeMoment(date, time).add(1, 'hour')
+        const startDateTimeMoment = Common.getDateTimeMoment(INSERT_DATE, INSERT_TIME)
+        const endDateTimeMoment = Common.getDateTimeMoment(INSERT_DATE, INSERT_TIME).add(1, 'hour')
 
         const startDateText = startDateTimeMoment.format(Constants.DATEFORMAT)
         const startTimeText = startDateTimeMoment.format(Constants.TIMEFORMAT)
@@ -39,13 +39,13 @@ describe('Recurring DB', function () {
         const dbKeyText = DbKeys.getDecodedDateText(dbKey)
 
         schedule = {
-            "name": "teste schedule",
-            "type": "test",
-            "startdate": startDateText,
-            "enddate": endDateText,
-            "starttime": startTimeText,
-            "endtime": endTimeText,
-            "days": 31
+            name: 'test schedule',
+            type: 'test',
+            startdate: startDateText,
+            enddate: endDateText,
+            starttime: startTimeText,
+            endtime: endTimeText,
+            days: 31
         }
 
         return {
@@ -64,9 +64,9 @@ describe('Recurring DB', function () {
 
     // ------------------------------------------------------------------------------------
 
-    it('should test insertSchedule', function (done) {
+    it('should test insertSchedule', (done) => {
 
-        const scheduleInfo = getTestSchedule(db, INSERT_DATE, INSERT_TIME)
+        const scheduleInfo = getTestSchedule()
 
         db.insertSchedule(scheduleInfo.schedule)
             .then((dbKey) => { return db.getSchedule(dbKey) })
@@ -93,9 +93,9 @@ describe('Recurring DB', function () {
 
     })
 
-    it('should test updateSchedule', function (done) {
+    it('should test updateSchedule', (done) => {
 
-        const scheduleInfo = getTestSchedule(db, INSERT_DATE, INSERT_TIME)
+        const scheduleInfo = getTestSchedule()
 
         const updatedName = 'Updated Schedule'
 
@@ -124,9 +124,9 @@ describe('Recurring DB', function () {
 
     })
 
-    it('should test getSchedule', function (done) {
+    it('should test getSchedule', (done) => {
 
-        const scheduleInfo = getTestSchedule(db, INSERT_DATE, INSERT_TIME)
+        const scheduleInfo = getTestSchedule()
 
         db.insertSchedule(scheduleInfo.schedule)
             .then((dbKey) => { return db.getSchedule(dbKey) })
@@ -153,9 +153,9 @@ describe('Recurring DB', function () {
 
     })
 
-    it('should test getSchedules', function (done) {
+    it('should test getSchedules', (done) => {
 
-        const scheduleInfo = getTestSchedule(db, INSERT_DATE, INSERT_TIME)
+        const scheduleInfo = getTestSchedule()
 
         let insertedKey = ''
 
@@ -180,9 +180,9 @@ describe('Recurring DB', function () {
 
     })
 
-    it('should test delSchedule', function (done) {
+    it('should test delSchedule', (done) => {
 
-        const scheduleInfo = getTestSchedule(db, INSERT_DATE, INSERT_TIME)
+        const scheduleInfo = getTestSchedule()
 
         let insertedKey = ''
 
@@ -215,9 +215,9 @@ describe('Recurring DB', function () {
 
     })
 
-    it('should test getNextDbKey', function (done) {
+    it('should test getNextDbKey', (done) => {
 
-        const scheduleInfo = getTestSchedule(db, INSERT_DATE, INSERT_TIME)
+        const scheduleInfo = getTestSchedule()
 
         db.insertSchedule(scheduleInfo.schedule)
             .then((dbKey) => { return db.getNextDbKey(dbKey) })
@@ -243,9 +243,9 @@ describe('Recurring DB', function () {
 
     })
 
-    it('should test getMappedSchedules', function (done) {
+    it('should test getMappedSchedules', (done) => {
 
-        const scheduleInfo = getTestSchedule(db, INSERT_DATE, INSERT_TIME)
+        const scheduleInfo = getTestSchedule()
 
         let insertedKey = ''
 

@@ -81,7 +81,7 @@ class UnboundedDb {
     
     getSchedules() {
     
-        let options = {}
+        const options = {}
         
         return new Promise((resolve, reject) => {
             const schedules = new Map()

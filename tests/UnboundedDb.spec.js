@@ -6,14 +6,14 @@ const Constants = require('../src/Constants')
 const UnboundedDb = require('../src/UnboundedDb.js')
 const DbKeys = require('../src/DbKeys')
 
-describe('Unbounded DB', function () {
+describe('Unbounded DB', () => {
 
     const schedule = {
-        "name": "weekday",
-        "type": "system",
-        "starttime": "05:30 AM",
-        "endtime": "09:00 PM",
-        "days": 31
+        name: 'weekday',
+        type: 'system',
+        starttime: '05:30 AM',
+        endtime: '09:00 PM',
+        days: 31
     }
 
     const db = new UnboundedDb()
@@ -27,7 +27,7 @@ describe('Unbounded DB', function () {
             })
     })
 
-    it('should test insertSchedule', function (done) {
+    it('should test insertSchedule', (done) => {
 
         db.insertSchedule(schedule)
             .then((dbKey) => { return db.getSchedule(dbKey) })
@@ -49,7 +49,7 @@ describe('Unbounded DB', function () {
 
     })
 
-    it('should test updateSchedule', function (done) {
+    it('should test updateSchedule', (done) => {
 
         const updatedName = 'Updated Schedule'
 
@@ -78,7 +78,7 @@ describe('Unbounded DB', function () {
 
     })
 
-    it('should test getSchedule', function (done) {
+    it('should test getSchedule', (done) => {
 
         db.insertSchedule(schedule)
             .then((dbKey) => { return db.getSchedule(dbKey) })
@@ -100,7 +100,7 @@ describe('Unbounded DB', function () {
 
     })
 
-    it('should test getSchedules', function (done) {
+    it('should test getSchedules', (done) => {
 
         let insertedKey = ''
 
@@ -126,7 +126,7 @@ describe('Unbounded DB', function () {
 
     })
 
-    it('should test delSchedule', function (done) {
+    it('should test delSchedule', (done) => {
 
         let insertedKey = ''
 

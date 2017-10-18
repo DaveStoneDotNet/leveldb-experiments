@@ -158,10 +158,10 @@ class RecurringDb {
                 .then((recurringSchedules) => {
                     recurringSchedules.forEach((recurringSchedule, key) => {
                         schedules.set(key, {
-                            "name": recurringSchedule.name,
-                            "type": recurringSchedule.type,
-                            "start": Common.getDateTimeText(recurringSchedule.startdate, recurringSchedule.starttime),
-                            "end": Common.getDateTimeText(recurringSchedule.enddate, recurringSchedule.endtime),
+                            name: recurringSchedule.name,
+                            type: recurringSchedule.type,
+                            start: Common.getDateTimeText(recurringSchedule.startdate, recurringSchedule.starttime),
+                            end: Common.getDateTimeText(recurringSchedule.enddate, recurringSchedule.endtime)
                           })
                     })
                     resolve(schedules)

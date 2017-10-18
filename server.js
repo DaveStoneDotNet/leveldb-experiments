@@ -48,8 +48,8 @@ function main() {
 
     // ----------------------------------------------
 
-    // const schedules = new Schedules()
-    // schedules.list('10/01/2017', '10/31/2017')
+    const schedules = new Schedules()
+    schedules.list('10/01/2017', '10/31/2017')
 }
 
 main()

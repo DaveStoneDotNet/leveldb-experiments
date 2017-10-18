@@ -6,7 +6,7 @@ const Constants = require('../src/Constants')
 const SchedulesDb = require('../src/SchedulesDb.js')
 const DbKeys = require('../src/DbKeys')
 
-describe('Schedule DB', function () {
+describe('Schedule DB', () => {
 
     const INSERT_DATE = '10/05/2017 05:00 PM'
 
@@ -28,10 +28,10 @@ describe('Schedule DB', function () {
         const nextMillisecondText = DbKeys.getDecodedDateText(DbKeys.getNextMillisecondEncodedDbKey(dbKey))
         
         const schedule = {
-            "name": "meeting 1",
-            "type": "user",
-            "start": INSERT_DATE,
-            "end": testMoment.add(1, 'hour').format(Constants.DATETIMEFORMAT)
+            name: 'meeting 1',
+            type: 'user',
+            start: INSERT_DATE,
+            end: testMoment.add(1, 'hour').format(Constants.DATETIMEFORMAT)
         }
 
         return {
@@ -42,7 +42,7 @@ describe('Schedule DB', function () {
         }
     }
 
-    it('should test insertSchedule', function (done) {
+    it('should test insertSchedule', (done) => {
 
         const scheduleInfo = getTestSchedule()
 
@@ -75,7 +75,7 @@ describe('Schedule DB', function () {
 
     })
 
-    it('should test updateSchedule', function (done) {
+    it('should test updateSchedule', (done) => {
 
         const scheduleInfo = getTestSchedule()
 
@@ -106,7 +106,7 @@ describe('Schedule DB', function () {
 
     })
 
-    it('should test getSchedule', function (done) {
+    it('should test getSchedule', (done) => {
 
         const scheduleInfo = getTestSchedule()
 
@@ -135,7 +135,7 @@ describe('Schedule DB', function () {
 
     })
 
-    it('should test getSchedules', function (done) {
+    it('should test getSchedules', (done) => {
 
         const scheduleInfo = getTestSchedule()
 
@@ -162,7 +162,7 @@ describe('Schedule DB', function () {
 
     })
 
-    it('should test delSchedule', function (done) {
+    it('should test delSchedule', (done) => {
 
         const scheduleInfo = getTestSchedule()
 
@@ -197,7 +197,7 @@ describe('Schedule DB', function () {
 
     })
 
-    it('should test getNextDbKey', function (done) {
+    it('should test getNextDbKey', (done) => {
 
         const scheduleInfo = getTestSchedule()
 
@@ -227,6 +227,5 @@ describe('Schedule DB', function () {
             })
 
     })
-
 
 })

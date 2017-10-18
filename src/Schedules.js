@@ -1,6 +1,6 @@
 const moment = require('moment')
 
-const constants = require('./Constants')
+const Constants = require('./Constants')
 
 const Common = require('./Common')
 const DbKeys = require('./DbKeys')
@@ -42,36 +42,36 @@ class Schedules {
 
     // ------------------------------------------------------------
 
-    getDaysArray(recurringSchedule) {
+    static getDaysArray(recurringSchedule) {
 
-        let days = []
+        const days = []
 
         if (recurringSchedule.days) {
-            if (recurringSchedule.days & constants.SUN) days.push(0)
-            if (recurringSchedule.days & constants.MON) days.push(1)
-            if (recurringSchedule.days & constants.TUE) days.push(2)
-            if (recurringSchedule.days & constants.WED) days.push(3)
-            if (recurringSchedule.days & constants.THU) days.push(4)
-            if (recurringSchedule.days & constants.FRI) days.push(5)
-            if (recurringSchedule.days & constants.SAT) days.push(6)
+            if (recurringSchedule.days & Constants.SUN) days.push(0)
+            if (recurringSchedule.days & Constants.MON) days.push(1)
+            if (recurringSchedule.days & Constants.TUE) days.push(2)
+            if (recurringSchedule.days & Constants.WED) days.push(3)
+            if (recurringSchedule.days & Constants.THU) days.push(4)
+            if (recurringSchedule.days & Constants.FRI) days.push(5)
+            if (recurringSchedule.days & Constants.SAT) days.push(6)
         }
 
         return days
     }
 
-    includeRecurring(start, end, recurringSchedule) {
+    static includeRecurring(start, end, recurringSchedule) {
 
         const includedSchedules = new Set()
 
-        const days = this.getDaysArray(recurringSchedule)
+        const days = Schedules.getDaysArray(recurringSchedule)
 
-        const startMoment = moment(start, constants.DATETIMEFORMAT)
-        const endMoment = moment(end, constants.DATETIMEFORMAT).add(1, 'day')
+        const startMoment = moment(start, Constants.DATETIMEFORMAT)
+        const endMoment = moment(end, Constants.DATETIMEFORMAT).add(1, 'day')
 
         const scheduleStartMoment = Common.getDateTimeMoment(recurringSchedule.startdate)
         const scheduleEndMoment = Common.getDateTimeMoment(recurringSchedule.enddate).add(1, 'day')
 
-        for (var m = startMoment; m.isBefore(endMoment); m.add(1, 'days')) {
+        for (let m = startMoment; m.isBefore(endMoment); m.add(1, 'days')) {
 
             const isIncluded = days.includes(m.day())
 
@@ -79,15 +79,15 @@ class Schedules {
 
                 const isInRange = (m.isSame(scheduleStartMoment) || m.isAfter(scheduleStartMoment)) && m.isBefore(scheduleEndMoment)
 
-                //console.log(`NAME: ${recurringSchedule.name} : IS IN RANGE: ${isInRange} : DATE: ${m.format(constants.DATEFORMAT)} : START: ${scheduleStartMoment.format(constants.DATEFORMAT)} : END: ${scheduleEndMoment.format(constants.DATEFORMAT)} : IS BEFORE: ${m.isBefore(scheduleEndMoment)} : IS AFTER: ${m.isAfter(scheduleStartMoment)} : IS SAME: ${m.isSame(scheduleStartMoment)}`)
+                //console.log(`NAME: ${recurringSchedule.name} : IS IN RANGE: ${isInRange} : DATE: ${m.format(Constants.DATEFORMAT)} : START: ${scheduleStartMoment.format(Constants.DATEFORMAT)} : END: ${scheduleEndMoment.format(Constants.DATEFORMAT)} : IS BEFORE: ${m.isBefore(scheduleEndMoment)} : IS AFTER: ${m.isAfter(scheduleStartMoment)} : IS SAME: ${m.isSame(scheduleStartMoment)}`)
 
                 if (isInRange) {
                     const schedule = {
                         key: recurringSchedule.key,
                         name: recurringSchedule.name,
                         type: recurringSchedule.type,
-                        start: Common.getDateTimeText(m.format(constants.DATEFORMAT), recurringSchedule.starttime),
-                        end: Common.getDateTimeText(m.format(constants.DATEFORMAT), recurringSchedule.endtime),
+                        start: Common.getDateTimeText(m.format(Constants.DATEFORMAT), recurringSchedule.starttime),
+                        end: Common.getDateTimeText(m.format(Constants.DATEFORMAT), recurringSchedule.endtime),
                         dbSource: recurringSchedule.dbSource
                     }
                     includedSchedules.add(schedule)
@@ -111,7 +111,7 @@ class Schedules {
 
                     recurringSchedules.forEach((recurringSchedule, key) => {
 
-                        const includedSchedules = this.includeRecurring(start, end, recurringSchedule)
+                        const includedSchedules = Schedules.includeRecurring(start, end, recurringSchedule)
                         includedSchedules.forEach((s) => mappdeSchedules.add(s))
                     })
 
@@ -123,17 +123,17 @@ class Schedules {
 
     // ------------------------------------------------------------
 
-    getPartitionedSchedules(schedules) {
+    static getPartitionedSchedules(schedules) {
         const partitionedSchedules = {
             systemSchedules: new Set(),
             allDaySchedules: new Set()
         }
         schedules.forEach((s) => {
             switch (s.type) {
-                case constants.SYSTEM_SCHEDULE:
+                case Constants.SYSTEM_SCHEDULE:
                     partitionedSchedules.systemSchedules.add(s)
                     break
-                case constants.ALLDAY_SCHEDULE:
+                case Constants.ALLDAY_SCHEDULE:
                     partitionedSchedules.allDaySchedules.add(s)
                     break
             }
@@ -141,31 +141,31 @@ class Schedules {
         return partitionedSchedules
     }
 
-    getMappedSystemSchedules(start, end, systemSchedules) {
+    static getMappedSystemSchedules(start, end, systemSchedules) {
 
         const mappedSchedules = new Set()
 
         systemSchedules.forEach((systemSchedule) => {
 
-            const days = this.getDaysArray(systemSchedule)
+            const days = Schedules.getDaysArray(systemSchedule)
 
             const startMoment = Common.getDateTimeMoment(start)
             const endMoment = Common.getDateTimeMoment(end).add(1, 'day')
 
-            for (var m = startMoment; m.isBefore(endMoment); m.add(1, 'days')) {
+            for (let m = startMoment; m.isBefore(endMoment); m.add(1, 'days')) {
                 const isIncluded = days.includes(m.day())
                 if (isIncluded) {
 
-                    const start = `${m.format(constants.DATEFORMAT)} ${systemSchedule.starttime}`
-                    const end = `${m.format(constants.DATEFORMAT)} ${systemSchedule.endtime}`
+                    const startText = `${m.format(Constants.DATEFORMAT)} ${systemSchedule.starttime}`
+                    const endText = `${m.format(Constants.DATEFORMAT)} ${systemSchedule.endtime}`
 
                     mappedSchedules.add(
                         {
                             key: systemSchedule.key,
                             name: systemSchedule.name,
                             type: systemSchedule.type,
-                            start: start,
-                            end: end, 
+                            start: startText,
+                            end: endText, 
                             dbSource: systemSchedule.dbSource
                         }
                     )
@@ -176,7 +176,7 @@ class Schedules {
         return mappedSchedules
     }
 
-    getMappedAllDaySchedules(start, end, allDaySchedules) {
+    static getMappedAllDaySchedules(start, end, allDaySchedules) {
 
         const mappedSchedules = new Set()
 
@@ -187,20 +187,20 @@ class Schedules {
 
             const eventdate = Common.getDateTimeMoment(allDaySchedule.eventdate)
 
-            for (var m = startMoment; m.isBefore(endMoment); m.add(1, 'days')) {
+            for (let m = startMoment; m.isBefore(endMoment); m.add(1, 'days')) {
 
                 if (Common.isSameDay(m, eventdate)) {
 
-                    const start = `${m.format(constants.DATEFORMAT)} 00:00:00.000 AM`
-                    const end   = `${m.format(constants.DATEFORMAT)} 11:59:59.999 PM`
+                    const startText = `${m.format(Constants.DATEFORMAT)} 00:00:00.000 AM`
+                    const endText   = `${m.format(Constants.DATEFORMAT)} 11:59:59.999 PM`
 
                     mappedSchedules.add(
                         {
                             key: allDaySchedule.key,
                             name: allDaySchedule.name,
                             type: allDaySchedule.type,
-                            start: start,
-                            end: end, 
+                            start: startText,
+                            end: endText, 
                             dbSource: allDaySchedule.dbSource
                         }
                     )
@@ -220,10 +220,10 @@ class Schedules {
             this.UnboundedDb.getSchedules()
                 .then((schedules) => {
 
-                    const partitionedSchedules = this.getPartitionedSchedules(schedules)
+                    const partitionedSchedules = Schedules.getPartitionedSchedules(schedules)
 
-                    const systemSchedules = this.getMappedSystemSchedules(start, end, partitionedSchedules.systemSchedules)
-                    const allDaySchedules = this.getMappedAllDaySchedules(start, end, partitionedSchedules.allDaySchedules)
+                    const systemSchedules = Schedules.getMappedSystemSchedules(start, end, partitionedSchedules.systemSchedules)
+                    const allDaySchedules = Schedules.getMappedAllDaySchedules(start, end, partitionedSchedules.allDaySchedules)
 
                     mappdeSchedules = new Set([...systemSchedules.values(), ...allDaySchedules.values()])
 
@@ -238,12 +238,12 @@ class Schedules {
 
     getSchedules(start, end) {
 
-        let schedules = new Set()
+        const schedules = new Set()
 
-        let dailySchedules = new Set()
-        let recurringSchedules = new Set()
-        let systemSchedules = new Set()
-        let allDaySchedules = new Set()
+        const dailySchedules = new Set()
+        const recurringSchedules = new Set()
+        const systemSchedules = new Set()
+        const allDaySchedules = new Set()
 
         return new Promise((resolve, reject) => {
 
@@ -270,8 +270,8 @@ class Schedules {
 
         return new Promise((resolve, reject) => {
 
-            const start = moment().startOf('day').format(constants.DATEFORMAT)
-            const end = moment().startOf('day').add(1, 'day').format(constants.DATEFORMAT)
+            const start = moment().startOf('day').format(Constants.DATEFORMAT)
+            const end = moment().startOf('day').add(1, 'day').format(Constants.DATEFORMAT)
 
             this.getSchedules(start, end)
                 .then((todaysSchedules) => {
