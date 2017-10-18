@@ -19,6 +19,9 @@ const SCHEDULES_DB      =  'schedules'
 const RECURRING_DB      =  'recurring'
 const UNBOUNDED_DB      =  'unbounded'
 
+const SYSTEM_SCHEDULE   =  'system'
+const ALLDAY_SCHEDULE   =  'all-day'
+
 class Constants {
 
     static get DATEFORMAT()        { return DATEFORMAT        }
@@ -40,6 +43,9 @@ class Constants {
     static get SCHEDULES_DB() { return SCHEDULES_DB }
     static get RECURRING_DB() { return RECURRING_DB }
     static get UNBOUNDED_DB() { return UNBOUNDED_DB }
+
+    static get SYSTEM_SCHEDULE() { return SYSTEM_SCHEDULE }
+    static get ALLDAY_SCHEDULE() { return ALLDAY_SCHEDULE }
 }
 
 module.exports = Constants

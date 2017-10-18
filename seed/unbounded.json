@@ -29,5 +29,10 @@
         "name": "anniversary",
         "type": "all-day",
         "eventdate": "09/14/1998"
+      }, 
+      {
+        "name": "special day",
+        "type": "all-day",
+        "eventdate": "10/17/2017"
       }
 ]
