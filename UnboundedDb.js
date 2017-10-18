@@ -21,10 +21,6 @@ class UnboundedDb {
         this.putSchedule    = this.putSchedule.bind(this)
     }
 
-    close() {
-        this.db.close()
-    }
-    
     insertSchedule(jsonSchedule) {
     
         const self = this
@@ -91,6 +87,7 @@ class UnboundedDb {
             const schedules = new Map()
             this.db.createReadStream(options)
                 .on('data', (jsonSchedule) => {
+                    jsonSchedule.value.key = jsonSchedule.key
                     schedules.set(jsonSchedule.key, jsonSchedule.value)
                 })
                 .on('error', (err) => {
@@ -121,7 +118,7 @@ class UnboundedDb {
     
         return new Promise((resolve, reject) => {
     
-            delSchedule(dbKey)
+            this.delSchedule(dbKey)
                 .then((deletedDbKey) => {
                     this.putSchedule(deletedDbKey, jsonSchedule)
                         .then((putDbKey) => {

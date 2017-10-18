@@ -107,6 +107,7 @@ class SchedulesDb {
                         })
                     }
                 }
+                if (value) value.dbKey = encodedDbKey.toString()
                 resolve({
                     exists: true,
                     schedule: value
@@ -135,6 +136,7 @@ class SchedulesDb {
             const schedules = new Map()
             this.db.createReadStream(options)
                 .on('data', (jsonSchedule) => {
+                    jsonSchedule.value.key = jsonSchedule.key
                     schedules.set(jsonSchedule.key, jsonSchedule.value)
                 })
                 .on('error', (err) => {
@@ -165,7 +167,7 @@ class SchedulesDb {
     
         return new Promise((resolve, reject) => {
     
-            delSchedule(dbKey)
+            this.delSchedule(dbKey)
                 .then((deletedDbKey) => {
                     this.putSchedule(deletedDbKey, jsonSchedule)
                         .then((putDbKey) => {

@@ -24,12 +24,12 @@ class Schedules {
                 .then((schedules) => {
                     schedules.forEach((schedule, key) => {
                         mappdeSchedules.add({
-                            key: key,
+                            key: schedule.key,
                             name: schedule.name,
                             type: schedule.type,
                             start: schedule.start,
                             end: schedule.end,
-                            isRecurring: false
+                            dbSource: schedule.dbSource
                         })
                     })
                     resolve(mappdeSchedules)
@@ -38,6 +38,8 @@ class Schedules {
         })
 
     }
+
+    // ------------------------------------------------------------
 
     getDaysArray(recurringSchedule) {
 
@@ -80,12 +82,12 @@ class Schedules {
 
                 if (isInRange) {
                     const schedule = {
-                        key: key,
+                        key: recurringSchedule.key,
                         name: recurringSchedule.name,
                         type: recurringSchedule.type,
                         start: Common.getDateTimeText(m.format(constants.DATEFORMAT), recurringSchedule.starttime),
                         end: Common.getDateTimeText(m.format(constants.DATEFORMAT), recurringSchedule.endtime),
-                        isRecurring: true
+                        dbSource: recurringSchedule.dbSource
                     }
                     includedSchedules.add(schedule)
                 }
@@ -158,10 +160,12 @@ class Schedules {
 
                     mappedSchedules.add(
                         {
-                            "name": systemSchedule.name,
-                            "type": systemSchedule.type,
-                            "start": start,
-                            "end": end
+                            key: systemSchedule.key,
+                            name: systemSchedule.name,
+                            type: systemSchedule.type,
+                            start: start,
+                            end: end, 
+                            dbSource: systemSchedule.dbSource
                         }
                     )
                 }
@@ -191,10 +195,12 @@ class Schedules {
 
                     mappedSchedules.add(
                         {
-                            "name": allDaySchedule.name,
-                            "type": allDaySchedule.type,
-                            "start": start,
-                            "end": end
+                            key: allDaySchedule.key,
+                            name: allDaySchedule.name,
+                            type: allDaySchedule.type,
+                            start: start,
+                            end: end, 
+                            dbSource: allDaySchedule.dbSource
                         }
                     )
                 }
@@ -279,7 +285,8 @@ class Schedules {
             .then((schedules) => {
                 let index = 0
                 console.log(`${schedules.size} COMBINED SCHEDULES`)
-                schedules.forEach((s) => console.log(`${++index} | ${s.name} | ${s.type} | ${s.start} | ${s.end} | ${s.isRecurring}`))
+                console.log(`index | key | name| type | start | end | dbSource`)
+                schedules.forEach((s) => console.log(`${++index} | ${s.key}  | ${s.name} | ${s.type} | ${s.start} | ${s.end} | ${s.dbSource}`))
             })
     }
 

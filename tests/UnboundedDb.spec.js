@@ -8,32 +8,114 @@ const DbKeys = require('../DbKeys')
 
 describe('Unbounded DB', function () {
 
-    const INSERT_DATE = '12/01/2017 01:00 PM'
-    const DELETE_DATE = '12/02/2017 02:00 PM'
-    const GET_DATE = '12/03/2017 03:00 PM'
-    const UPDATE_DATE = '12/04/2017 04:00 PM'
-    const GET_SCHEDULES_DATE = '12/05/2017 05:00 PM'
+    const schedule = {
+        "name": "weekday",
+        "type": "system",
+        "starttime": "05:30 AM",
+        "endtime": "09:00 PM",
+        "days": 31
+    }
 
     const db = new UnboundedDb()
 
+    let dbCount = 0
+
+    beforeEach(() => {
+        return db.getSchedules()
+            .then((schedules) => {
+                dbCount = schedules.size
+            })
+    })
+
     it('should test insertSchedule', function (done) {
 
-        const schedule = {
-            "name": "weekday",
-            "type": "system",
-            "starttime": "05:30 AM",
-            "endtime": "09:00 PM",
-            "days": 31
-        }
-
         db.insertSchedule(schedule)
-            .then((dbKey) => {
-                return db.getSchedule(dbKey)
-            })
+            .then((dbKey) => { return db.getSchedule(dbKey) })
             .then((jsonSchedule) => {
                 expect(jsonSchedule.exists).to.be.true
                 expect(jsonSchedule.schedule.name).to.equal(schedule.name)
-                db.delSchedule(jsonSchedule.schedule.dbKey)
+                return db.delSchedule(jsonSchedule.schedule.dbKey)
+            })
+            .then(() => { return db.getSchedules() })
+            .then((schedules) => {
+                expect(schedules.size).to.equal(dbCount)
+                done()
+            })
+            .catch((err) => {
+                console.log('ERROR: ', err)
+                assert.fail(error)
+                done()
+            })
+
+    })
+
+    it('should test updateSchedule', function (done) {
+
+        const updatedName = 'Updated Schedule'
+
+        db.insertSchedule(schedule)
+            .then((dbKey) => { return db.getSchedule(dbKey) })
+            .then((jsonSchedule) => {
+                expect(jsonSchedule.exists).to.be.true
+                expect(jsonSchedule.schedule.name).to.equal(schedule.name)
+                jsonSchedule.schedule.name = updatedName
+                return db.updateSchedule(jsonSchedule.schedule.dbKey, jsonSchedule.schedule)
+            })
+            .then((jsonSchedule) => {
+                expect(jsonSchedule.name).to.equal(updatedName)
+                return db.delSchedule(jsonSchedule.dbKey)
+            })
+            .then(() => { return db.getSchedules() })
+            .then((schedules) => {
+                expect(schedules.size).to.equal(dbCount)
+                done()
+            })
+            .catch((err) => {
+                console.log('ERROR: ', err)
+                assert.fail(error)
+                done()
+            })
+
+    })
+
+    it('should test getSchedule', function (done) {
+
+        db.insertSchedule(schedule)
+            .then((dbKey) => { return db.getSchedule(dbKey) })
+            .then((jsonSchedule) => {
+                expect(jsonSchedule.exists).to.be.true
+                expect(jsonSchedule.schedule.name).to.equal(schedule.name)
+                return db.delSchedule(jsonSchedule.schedule.dbKey)
+            })
+            .then(() => { return db.getSchedules() })
+            .then((schedules) => {
+                expect(schedules.size).to.equal(dbCount)
+                done()
+            })
+            .catch((err) => {
+                console.log('ERROR: ', err)
+                assert.fail(error)
+                done()
+            })
+
+    })
+
+    it('should test getSchedules', function (done) {
+
+        let insertedKey = ''
+
+        db.insertSchedule(schedule)
+            .then((dbKey) => {
+                insertedKey = dbKey
+                return db.getSchedules()
+            })
+            .then((jsonSchedules) => {
+                expect(jsonSchedules.size).to.equal(dbCount + 1)
+                return db.delSchedule(insertedKey)
+            })
+            .then(() => { return db.getSchedules() })
+            .then((schedules) => {
+                expect(schedules.size).to.equal(dbCount)
                 done()
             })
             .catch((err) => {
@@ -46,103 +128,29 @@ describe('Unbounded DB', function () {
 
     it('should test delSchedule', function (done) {
 
-        const schedule = {
-            "name": "weekday",
-            "type": "system",
-            "starttime": "05:30 AM",
-            "endtime": "09:00 PM",
-            "days": 31
-        }
+        let insertedKey = ''
 
         db.insertSchedule(schedule)
             .then((dbKey) => {
+                insertedKey = dbKey
                 return db.getSchedule(dbKey)
             })
             .then((jsonSchedule) => {
                 expect(jsonSchedule.exists).to.be.true
                 expect(jsonSchedule.schedule.name).to.equal(schedule.name)
-
-                db.delSchedule(jsonSchedule.schedule.dbKey)
-                    .then((dbKey) => {
-                        return db.getSchedule(dbKey)
-                    })
-                    .then((jsonSchedule) => {
-                        expect(jsonSchedule.exists).to.be.false
-                        done()
-                    })
+                return db.delSchedule(jsonSchedule.schedule.dbKey)
             })
-            .catch((err) => {
-                console.log('ERROR: ', err)
-                assert.fail(error)
-                done()
-            })
-
-    })
-
-    it('should test getSchedule', function (done) {
-
-        const schedule = {
-            "name": "weekday",
-            "type": "system",
-            "starttime": "05:30 AM",
-            "endtime": "09:00 PM",
-            "days": 31
-        }
-
-        db.insertSchedule(schedule)
             .then((dbKey) => {
                 return db.getSchedule(dbKey)
             })
             .then((jsonSchedule) => {
-                expect(jsonSchedule.exists).to.be.true
-                expect(jsonSchedule.schedule.name).to.equal(schedule.name)
-                db.delSchedule(jsonSchedule.schedule.dbKey)
-                    .then((dbKey) => {
-                        return db.getSchedule(dbKey)
-                    })
-                    .then((jsonSchedule) => {
-                        expect(jsonSchedule.exists).to.be.false
-                        done()
-                    })
-            })
-            .catch((err) => {
-                console.log('ERROR: ', err)
-                assert.fail(error)
-                done()
-            })
-
-    })
-
-
-    it('should test getSchedules', function (done) {
-
-        const schedule = {
-            "name": "weekday",
-            "type": "system",
-            "starttime": "05:30 AM",
-            "endtime": "09:00 PM",
-            "days": 31
-        }
-
-        let inserteKey = null
-
-        db.insertSchedule(schedule)
-            .then((dbKey) => {
-                inserteKey = dbKey
+                expect(jsonSchedule.exists).to.be.false
+                expect(jsonSchedule.schedule).to.be.undefined
                 return db.getSchedules()
             })
-            .then((jsonSchedules) => {
-                expect(jsonSchedules).not.to.be.empty
-                expect(jsonSchedules.size).to.be.at.least(1)
-
-                db.delSchedule(inserteKey)
-                    .then((dbKey) => {
-                        return db.getSchedule(dbKey)
-                    })
-                    .then((jsonSchedule) => {
-                        expect(jsonSchedule.exists).to.be.false
-                        done()
-                    })
+            .then((schedules) => {
+                expect(schedules.size).to.equal(dbCount)
+                done()
             })
             .catch((err) => {
                 console.log('ERROR: ', err)
@@ -151,7 +159,5 @@ describe('Unbounded DB', function () {
             })
 
     })
-
-
 
 })

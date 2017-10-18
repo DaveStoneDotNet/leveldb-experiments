@@ -25,26 +25,6 @@ class RecurringDb {
         this.updateSchedule = this.updateSchedule.bind(this)
     }
 
-    // ------------------------------------------------------------------------------------------------
-
-    getRecurringStartDateTimeText(jsonSchedule) {
-        return Common.getDateTimeText(jsonSchedule.startdate, jsonSchedule.starttime)
-    }
-
-    getRecurringStartDateTimeMoment(jsonSchedule) {
-        return moment(Common.getDateTimeText(jsonSchedule.startdate, jsonSchedule.starttime)),format(constants.DATETIMEFORMAT)
-    }
-
-    getRecurringEndDateTimeText(jsonSchedule) {
-        return Common.getDateTimeText(jsonSchedule.enddate, jsonSchedule.endtime)
-    }
-
-    getRecurringEndDateTimeMoment(jsonSchedule) {
-        return moment(Common.getDateTimeText(jsonSchedule.enddate, jsonSchedule.endtime)),format(constants.DATETIMEFORMAT)
-    }
-
-    // ------------------------------------------------------------------------------------------------
-
     getNextDbKey(encodedDbStartKey) {
     
         const encodedDbEndKey = DbKeys.getNextMinuteEncodedDbKey(encodedDbStartKey)
@@ -128,6 +108,7 @@ class RecurringDb {
                         })
                     }
                 }
+                if (value) value.dbKey = encodedDbKey.toString()
                 resolve({
                     exists: true,
                     schedule: value
@@ -156,6 +137,7 @@ class RecurringDb {
             const schedules = new Map()
             this.db.createReadStream(options)
                 .on('data', (jsonSchedule) => {
+                    jsonSchedule.value.key = jsonSchedule.key
                     schedules.set(jsonSchedule.key, jsonSchedule.value)
                 })
                 .on('error', (err) => {
@@ -207,7 +189,7 @@ class RecurringDb {
     
         return new Promise((resolve, reject) => {
     
-            delSchedule(dbKey)
+            this.delSchedule(dbKey)
                 .then((deletedDbKey) => {
                     this.putSchedule(deletedDbKey, jsonSchedule)
                         .then((putDbKey) => {
