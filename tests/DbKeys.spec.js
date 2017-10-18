@@ -1,9 +1,9 @@
 const expect = require('chai').expect
 const moment = require('moment')
 
-const constants = require('../constants')
+const constants = require('../src/constants')
 
-const DbKeys = require('../DbKeys')
+const DbKeys = require('../src/DbKeys')
 
 describe('DB Keys', function () {
 

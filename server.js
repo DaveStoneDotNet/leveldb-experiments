@@ -3,15 +3,16 @@ const moment = require('moment')
 const bytewise = require('bytewise')
 const uuid = require('uuid/v1')
 
-const Constants = require('./Constants')
+const Constants = require('./src/Constants')
 
-const Common = require('./Common')
-const DbKeys = require('./DbKeys')
-const SchedulesDb = require('./SchedulesDb')
-const RecurringDb = require('./RecurringDb')
-const UnboundedDb = require('./UnboundedDb')
+const Common = require('./src/Common')
+const DbKeys = require('./src/DbKeys')
 
-const Schedules = require('./Schedules')
+const SchedulesDb = require('./src/SchedulesDb')
+const RecurringDb = require('./src/RecurringDb')
+const UnboundedDb = require('./src/UnboundedDb')
+
+const Schedules = require('./src/Schedules')
 
 // ------------------------------------------------------------------------------------
 
@@ -25,14 +26,14 @@ function main() {
 
     // ----------------------------------------------
 
-    // const schedulesDb = new SchedulesDb()
-    // schedulesDb.seedDb()
+    const schedulesDb = new SchedulesDb()
+    schedulesDb.seedDb()
 
-    // const recurringDb = new RecurringDb()
-    // recurringDb.seedDb()
+    const recurringDb = new RecurringDb()
+    recurringDb.seedDb()
 
-    // const unboundedDb = new UnboundedDb()
-    // unboundedDb.seedDb()
+    const unboundedDb = new UnboundedDb()
+    unboundedDb.seedDb()
 
     // ----------------------------------------------
 

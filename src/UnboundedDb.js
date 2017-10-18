@@ -7,13 +7,13 @@ const constants = require('./Constants')
 const Common = require('./Common')
 const DbKeys = require('./DbKeys')
 
-const unboundedJson = require('./seed/unbounded.json')
+const unboundedJson = require('../seed/unbounded.json')
 
 class UnboundedDb {
 
     constructor() {
 
-        this.db = level('./data/unbounded', {
+        this.db = level('../data/unbounded', {
             valueEncoding: 'json'
         })
 

@@ -1,10 +1,10 @@
 const expect = require('chai').expect
 const moment = require('moment')
 
-const Constants = require('../Constants')
+const Constants = require('../src/Constants')
 
-const SchedulesDb = require('../SchedulesDb.js')
-const DbKeys = require('../DbKeys')
+const SchedulesDb = require('../src/SchedulesDb.js')
+const DbKeys = require('../src/DbKeys')
 
 describe('Schedule DB', function () {
 

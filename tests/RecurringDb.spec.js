@@ -1,11 +1,11 @@
 const expect = require('chai').expect
 const moment = require('moment')
 
-const Constants = require('../Constants')
+const Constants = require('../src/Constants')
 
-const Common = require('../Common')
-const RecurringDb = require('../RecurringDb.js')
-const DbKeys = require('../DbKeys')
+const Common = require('../src/Common')
+const RecurringDb = require('../src/RecurringDb.js')
+const DbKeys = require('../src/DbKeys')
 
 describe('Recurring DB', function () {
 

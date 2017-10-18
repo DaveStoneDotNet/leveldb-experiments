@@ -6,13 +6,13 @@ const constants = require('./Constants')
 const Common = require('./Common')
 const DbKeys = require('./DbKeys')
 
-const recurringJson = require('./seed/recurring.json')
+const schedulesJson = require('../seed/schedules.json')
 
-class RecurringDb {
+class SchedulesDb {
 
     constructor() {
 
-        this.db = level('./data/recurring', {
+        this.db = level('../data/schedules', {
             valueEncoding: 'json'
         })
 
@@ -24,7 +24,7 @@ class RecurringDb {
         this.delSchedule    = this.delSchedule.bind(this)
         this.updateSchedule = this.updateSchedule.bind(this)
     }
-
+    
     getNextDbKey(encodedDbStartKey) {
     
         const encodedDbEndKey = DbKeys.getNextMinuteEncodedDbKey(encodedDbStartKey)
@@ -56,8 +56,7 @@ class RecurringDb {
 
     insertSchedule(jsonSchedule) {
     
-        const startDateTime = `${jsonSchedule.startdate} ${jsonSchedule.starttime}`
-        const encodedDbStartKey = DbKeys.getEncodedDbKey(startDateTime)
+        const encodedDbStartKey = DbKeys.getEncodedDbKey(jsonSchedule.start)
     
         return new Promise((resolve, reject) => {
     
@@ -79,7 +78,7 @@ class RecurringDb {
     putSchedule(dbKey, jsonSchedule) {
     
         return new Promise((resolve, reject) => {
-            jsonSchedule.dbSource = constants.RECURRING_DB
+            jsonSchedule.dbSource = constants.SCHEDULES_DB
             this.db.put(dbKey.toString(), jsonSchedule, (err) => {
                 if (err) {
                     console.log('PUT ERROR', err)
@@ -132,7 +131,7 @@ class RecurringDb {
                 lt:  encodedDbEndKey.toString()
             }
         }
-        
+    
         return new Promise((resolve, reject) => {
             const schedules = new Map()
             this.db.createReadStream(options)
@@ -147,27 +146,6 @@ class RecurringDb {
                     resolve(schedules)
                 })
         })
-    
-    }
-    
-    getMappedSchedules(encodedDbStartKey, encodedDbEndKey) {
-    
-        return new Promise((resolve, reject) => {
-            const schedules = new Map()
-            this.getSchedules(encodedDbStartKey, encodedDbEndKey)
-                .then((recurringSchedules) => {
-                    recurringSchedules.forEach((recurringSchedule, key) => {
-                        schedules.set(key, {
-                            "name": recurringSchedule.name,
-                            "type": recurringSchedule.type,
-                            "start": Common.getDateTimeText(recurringSchedule.startdate, recurringSchedule.starttime),
-                            "end": Common.getDateTimeText(recurringSchedule.enddate, recurringSchedule.endtime),
-                          })
-                    })
-                    resolve(schedules)
-                })
-                .catch((err) => reject(err))
-            })
     
     }
     
@@ -205,19 +183,19 @@ class RecurringDb {
         })
     
     }
-    
+
     list() {
         this.getSchedules()
         .then((schedules) => {
             let index = 0
-            console.log(`${schedules.size} RECURRING SCHEDULES`)
-            schedules.forEach((s) => console.log(`${++index} | ${s.name} | ${s.type} | ${s.startdate} | ${s.enddate} | ${s.starttime} | ${s.endtime} | ${s.days} | ${s.dbSource}`))
+            console.log(`${schedules.size} SCHEDULES`)
+            schedules.forEach((s) => console.log(`${++index} | ${s.name} | ${s.type} | ${s.start} | ${s.end} | ${s.dbSource}`))
         })
     }
 
     seedDb() {
     
-        Common.forEachPromise(recurringJson, this.insertSchedule)
+        Common.forEachPromise(schedulesJson, this.insertSchedule)
             .then(() => {
                 console.log('DONE');
             })
@@ -225,7 +203,6 @@ class RecurringDb {
                 console.log('ERROR', err);
             })
     }
-    
 }
 
-module.exports = RecurringDb
+module.exports = SchedulesDb
